@@ -1,0 +1,31 @@
+target_sources(${LIB_NAME}
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismModelMotionSyncSettingJson.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismModelMotionSyncSettingJson.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSync.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSync.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncData.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncDataJson.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncDataJson.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncDefine.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineAnalysisResult.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineAnalysisResult.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineController.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineCri.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineCri.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineMappingInfo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineMappingInfo.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineVersion.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineVersion.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncProcessorCri.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncProcessorCri.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncEngine.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncEngine.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncProcessor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncProcessor.hpp
+)
+
+# Add sub directories.
+add_subdirectory(Lib)

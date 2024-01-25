@@ -52,7 +52,7 @@ void ICubismMotionSyncEngine::ReleaseAllProcessor()
     }
 }
 
-CubismMotionSyncEngineLib* ICubismMotionSyncEngine::GetEngineHandle()
+ICubismMotionSyncEngineLib* ICubismMotionSyncEngine::GetEngineHandle()
 {
     return _engineHandle;
 }
@@ -96,7 +96,7 @@ void ICubismMotionSyncEngine::DeleteAssociation(ICubismMotionSyncProcessor *proc
     }
 }
 
-ICubismMotionSyncEngine::ICubismMotionSyncEngine(CubismMotionSyncEngineLib *engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version) :
+ICubismMotionSyncEngine::ICubismMotionSyncEngine(ICubismMotionSyncEngineLib *engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version) :
     _engineHandle(engineHandle),
     _type(type),
     _name(name),

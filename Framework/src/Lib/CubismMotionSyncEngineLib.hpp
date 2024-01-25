@@ -5,88 +5,13 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-#ifndef LIVE2D_446C6AB6A76D465FBEB5EAA18FAA3141_INCLUDED
-#define LIVE2D_446C6AB6A76D465FBEB5EAA18FAA3141_INCLUDED
-#include <cstddef>
-#include <CubismFramework.hpp>
+#pragma once
+
+#include "ICubismMotionSyncEngineLib.hpp"
 
 class CubismMotionSyncEngineLoader;
 
-/************************************************************************
- *               Cと互換性のある構造体として定義
- * Live2DCubismMotionSyncEngine.h と同じ構造体として定義すること。
- ************************************************************************/
- /** Context of Analysis. */
-typedef void* CubismMotionSyncContext;
-
-/** Engine version identifier. */
-typedef Csm::csmUint32 CubismMotionSyncVersion;
-
-/**
- * Result of analysis.
- */
-struct CubismMotionSyncAnalysisResult
-{
-    CubismMotionSyncAnalysisResult(
-        Csm::csmFloat32* values = NULL
-        , Csm::csmInt32 valuesCount = NULL
-        , Csm::csmUint32 processedSampleCount = 0)
-        : Values(values),
-        ValuesCount(valuesCount),
-        ProcessedSampleCount(processedSampleCount) {}
-
-    /** Value Array of CubismParameter */
-    Csm::csmFloat32* Values;
-
-    /** Number of values used in the analysis. */
-    Csm::csmInt32 ValuesCount;
-
-    /** Number of samples used in the analysis. */
-    Csm::csmUint32 ProcessedSampleCount;
-};
-
-/** Mapping Information of AudioParameter. */
-struct CubismMotionSyncMappingInfo
-{
-    CubismMotionSyncMappingInfo(
-        const Csm::csmChar* audioParameterId = NULL
-        , const Csm::csmChar** modelParameterIds = NULL
-        , Csm::csmFloat32* modelParameterValues = NULL
-        , Csm::csmUint32 modelParameterCount = 0
-        , Csm::csmFloat32 scale = 0.0f
-        , Csm::csmUint32 enabled = 0)
-        : AudioParameterId(audioParameterId),
-        ModelParameterIds(modelParameterIds),
-        ModelParameterValues(modelParameterValues),
-        ModelParameterCount(modelParameterCount),
-        Scale(scale),
-        Enabled(enabled) {}
-    ~CubismMotionSyncMappingInfo()
-    {
-        int a = 0;
-    }
-
-    /** ID of AudioParameter. */
-    const Csm::csmChar* AudioParameterId;
-
-    /** Array of ID of ModelParameter linked to the AudioParameter. */
-    const Csm::csmChar** ModelParameterIds;
-
-    /** Array of ModelParameter Value. */
-    Csm::csmFloat32* ModelParameterValues;
-
-    /** Number of ModelParameter. */
-    Csm::csmUint32 ModelParameterCount;
-
-    /** Scaling value for CubismParameter. */
-    Csm::csmFloat32 Scale;
-
-    /** Enable / Disable for applying.*/
-    Csm::csmUint32 Enabled;
-};
-
-
-class CubismMotionSyncEngineLib
+class CubismMotionSyncEngineLib : public ICubismMotionSyncEngineLib
 {
 public:
     CubismMotionSyncEngineLib();
@@ -182,5 +107,3 @@ public:
 private:
     CubismMotionSyncEngineLoader* _engineIf;
 };
-
-#endif

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright(c) Live2D Inc. All rights reserved.
  *
  * Use of this source code is governed by the Live2D Open Software license
@@ -18,6 +18,8 @@ namespace LAppMotionSyncDefine {
 
     extern const csmInt32 AudioQueueBufferCount;    ///< AudioQueue の再生バッファ数
     extern const csmInt32 AudioQueueBufferSampleCount;  ///< AudioQueue の再生バッファに設定されるサンプル数
+    extern const csmUint32 CsmInputBufferSize; ///< マイクからの入力を溜めておくバッファの大きさ
+    extern const csmUint32 CsmRingBufferSize; ///< リングバッファの大きさ
 
     extern const csmChar* FastForwardImageName; ///< 早送りファイル
 

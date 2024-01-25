@@ -12,8 +12,6 @@
 #include "Lib/CubismMotionSyncUtil.hpp"
 #include "Type/csmVector.hpp"
 
-#define DEFAULT_AUDIO_BIT_DEPTH 32
-
 //--------- LIVE2D NAMESPACE ------------
 namespace Live2D { namespace Cubism { namespace Framework { namespace MotionSync {
 
@@ -67,7 +65,7 @@ public:
      *
      * @return モーションシンクエンジンのネイティブハンドル
      */
-    CubismMotionSyncEngineLib* GetEngineHandle();
+    ICubismMotionSyncEngineLib* GetEngineHandle();
 
     /**
      * @brief モーションシンクエンジンを解放する。
@@ -93,7 +91,7 @@ public:
      * @param[in]   name            エンジンの名前
      * @param[in]   version         エンジンのバージョン
      */
-    ICubismMotionSyncEngine(CubismMotionSyncEngineLib *engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version);
+    ICubismMotionSyncEngine(ICubismMotionSyncEngineLib *engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version);
 
     /**
      * @brief デストラクタ
@@ -106,7 +104,7 @@ protected:
     csmVector<ICubismMotionSyncProcessor*> _processors;
 
 private:
-    CubismMotionSyncEngineLib *_engineHandle;
+    ICubismMotionSyncEngineLib *_engineHandle;
     EngineType _type;
     csmString _name;
     CubismMotionSyncEngineVersion _version;

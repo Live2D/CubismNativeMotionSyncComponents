@@ -5,7 +5,7 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-#include "LAppPlaySound.hpp"
+#include "LAppAudioManager.hpp"
 #include <dsound.h>
 #include "LAppWavFileHandler.hpp"
 
@@ -19,7 +19,7 @@ LPDIRECTSOUND8 _directSound = NULL;
 LPDIRECTSOUNDBUFFER _primary = NULL;
 }
 
-csmBool LAppPlaySound::Init(HWND window, csmInt32 channels, csmInt32 samplesPerSec, csmInt32 bitDepth)
+csmBool LAppAudioManager::Init(HWND window, csmInt32 channels, csmInt32 samplesPerSec, csmInt32 bitDepth)
 {
     HRESULT result;
 
@@ -27,7 +27,7 @@ csmBool LAppPlaySound::Init(HWND window, csmInt32 channels, csmInt32 samplesPerS
     result = CoInitialize(NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CoInitialize() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to CoInitialize() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -35,7 +35,7 @@ csmBool LAppPlaySound::Init(HWND window, csmInt32 channels, csmInt32 samplesPerS
     result = DirectSoundCreate8(NULL, &_directSound, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to DirectSoundCreate8() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to DirectSoundCreate8() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -43,7 +43,7 @@ csmBool LAppPlaySound::Init(HWND window, csmInt32 channels, csmInt32 samplesPerS
     result = _directSound->SetCooperativeLevel(window, DSSCL_EXCLUSIVE | DSSCL_PRIORITY);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetCooperativeLevel() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to SetCooperativeLevel() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -58,7 +58,7 @@ csmBool LAppPlaySound::Init(HWND window, csmInt32 channels, csmInt32 samplesPerS
     result = _directSound->CreateSoundBuffer(&dsdesc, &_primary, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -73,14 +73,14 @@ csmBool LAppPlaySound::Init(HWND window, csmInt32 channels, csmInt32 samplesPerS
     result = _primary->SetFormat(&waveFormat);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetFormat() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to SetFormat() in LAppAudioManager::Init()");
         return false;
     }
 
     return true;
 }
 
-csmBool LAppPlaySound::Close()
+csmBool LAppAudioManager::Close()
 {
     if (_primary)
     {
@@ -100,7 +100,7 @@ csmBool LAppPlaySound::Close()
     return true;
 }
 
-csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
+csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
 {
     // 初期化
     Release();
@@ -117,7 +117,7 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     waveFormat = reinterpret_cast<LPWAVEFORMATEX>(CSM_MALLOC(sizeof(WAVEFORMATEX)));
     if (!waveFormat)
     {
-        CubismLogError("[APP]Failed malloc to 'waveFormat' in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed malloc to 'waveFormat' in LAppAudioManager::LoadFile()");
         return false;
     }
     waveFormat->wFormatTag = WAVE_FORMAT_PCM;
@@ -125,18 +125,21 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     _channels = wavHandlerInfo._numberOfChannels;
     waveFormat->nSamplesPerSec = wavHandlerInfo._samplingRate;
     waveFormat->nAvgBytesPerSec = wavHandlerInfo._avgBytesPerSec;
-    _bufferSampleBytes = LAppMotionSyncDefine::DirectSoundBufferSampleCount * wavHandlerInfo._blockAlign;
+    _bufferSampleBytes = LAppMotionSyncDefine::DirectSoundBufferSoundFileSampleCount * wavHandlerInfo._blockAlign;
     waveFormat->nBlockAlign = wavHandlerInfo._blockAlign;
     waveFormat->wBitsPerSample = wavHandlerInfo._bitsPerSample;
     _bitDepth = wavHandlerInfo._bitsPerSample;
     waveFormat->cbSize = 0;
+
+    // リングバッファ確保
+    _buffer.Resize(LAppMotionSyncDefine::CsmRingBufferSize * wavHandlerInfo._blockAlign);
 
     // 生の音声データを取得
     _dataSize = wavHandler.GetRawDataSize();
     _data = reinterpret_cast<csmByte*>(CSM_MALLOC(sizeof(csmByte) * _dataSize));
     if (!_data)
     {
-        CubismLogError("[APP]Failed malloc to '_data' in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed malloc to '_data' in LAppAudioManager::LoadFile()");
         CSM_FREE(waveFormat);
         return false;
     }
@@ -156,7 +159,7 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     result = _directSound->CreateSoundBuffer(&dsdesc, &_secondary, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppAudioManager::LoadFile()");
         CSM_FREE(waveFormat);
         return false;
     }
@@ -170,7 +173,7 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     result = _secondary->Lock(0, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, DSBLOCK_ENTIREBUFFER);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to Lock() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to Lock() in LAppAudioManager::LoadFile()");
         return false;
     }
     for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -178,18 +181,29 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
         reinterpret_cast<csmByte*>(soundBuffer1)[i] = _data[_dataPos];
         _dataPos++;
     }
-    _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
+    for (DWORD i = 0; i < soundBufferSize2 && _dataPos < _dataSize; i++)
+    {
+        reinterpret_cast<csmByte*>(soundBuffer2)[i] = _data[_dataPos];
+        _dataPos++;
+    }
+    result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
+    if (FAILED(result))
+    {
+        CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+        return false;
+    }
 
     // 口形に影響を与えたい音声のチャンネルを保存
     if (_channels <= useChannel)
     {
         useChannel = _channels - 1;
     }
+    _samplesPos = 0;
     _samplesSize = wavHandlerInfo._samplesPerChannel;
     _samples = reinterpret_cast<csmFloat32*>(CSM_MALLOC(sizeof(csmFloat32) * _samplesSize));
     if (!_samples)
     {
-        CubismLogError("[APP]Failed malloc to '_samples' in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed malloc to '_samples' in LAppAudioManager::LoadFile()");
         CSM_FREE(waveFormat);
         return false;
     }
@@ -200,10 +214,16 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
 
     _secondary->Play(0, 0, DSBPLAY_LOOPING);
 
+    result = _secondary->SetCurrentPosition(0);
+    if (FAILED(result))
+    {
+        CubismLogError("[APP]Failed to SetCurrentPosition() in LAppAudioManager::LoadFile()");
+    }
+
     return true;
 }
 
-csmBool LAppPlaySound::Update()
+csmBool LAppAudioManager::Update()
 {
     HRESULT result;
     DWORD playCursor;
@@ -211,10 +231,16 @@ csmBool LAppPlaySound::Update()
     DWORD soundBufferSize1, soundBufferSize2;
     csmUint32 bufferBytes = _bufferSampleBytes / 2;
 
+    if (!_secondary)
+    {
+        CubismLogError("[APP]_secondary is null in LAppAudioManager::Update()");
+        return false;
+    }
+
     result = _secondary->GetCurrentPosition(&playCursor, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to GetCurrentPosition() in LAppPlaySound::%s()", __func__);
+        CubismLogError("[APP]Failed to GetCurrentPosition() in LAppAudioManager::Update()");
         return false;
     }
 
@@ -226,7 +252,7 @@ csmBool LAppPlaySound::Update()
         result = _secondary->Lock(0, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
         if (FAILED(result))
         {
-            CubismLogError("[APP]Failed to Lock() in LAppPlaySound::%s()", __func__);
+            CubismLogError("[APP]Failed to Lock() in LAppAudioManager::Update()");
             return false;
         }
         for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -234,7 +260,17 @@ csmBool LAppPlaySound::Update()
             reinterpret_cast<csmByte*>(soundBuffer1)[i] = _data[_dataPos];
             _dataPos++;
         }
-        _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
+        for (DWORD i = 0; i < soundBufferSize2 && _dataPos < _dataSize; i++)
+        {
+            reinterpret_cast<csmByte*>(soundBuffer2)[i] = _data[_dataPos];
+            _dataPos++;
+        }
+        result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
+        if (FAILED(result))
+        {
+            CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+            return false;
+        }
 
         // 生の音声データがなくなったら再生終了
         if (_dataSize <= _dataPos)
@@ -246,10 +282,10 @@ csmBool LAppPlaySound::Update()
     {
 	    // 後半書き込み
         _writePosition = WritePosition_Back;
-        result = _secondary->Lock(bufferBytes, bufferBytes * 2, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
+        result = _secondary->Lock(bufferBytes, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
         if (FAILED(result))
         {
-            CubismLogError("[APP]Failed to Lock() in LAppPlaySound::%s()", __func__);
+            CubismLogError("[APP]Failed to Lock() in LAppAudioManager::Update()");
             return false;
         }
         for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -257,7 +293,17 @@ csmBool LAppPlaySound::Update()
             reinterpret_cast<csmByte*>(soundBuffer1)[i] = _data[_dataPos];
             _dataPos++;
         }
-        _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
+        for (DWORD i = 0; i < soundBufferSize2 && _dataPos < _dataSize; i++)
+        {
+            reinterpret_cast<csmByte*>(soundBuffer2)[i] = _data[_dataPos];
+            _dataPos++;
+        }
+        result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
+        if (FAILED(result))
+        {
+            CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+            return false;
+        }
 
         // 生の音声データがなくなったら再生終了
         if (_dataSize <= _dataPos)
@@ -268,12 +314,13 @@ csmBool LAppPlaySound::Update()
 
     // 音声データを口形バッファに書き込み
     csmUint32 pos = _dataPos / _channels / (_bitDepth / 8);
-    for (csmUint32 i = _buffer.GetSize(); i < pos; i++)
+    for (csmUint32 i = _samplesPos; i < pos; i++)
     {
         if (i < _samplesSize)
         {
              // MotionSyncへサンプルを送る。
-             _buffer.PushBack(_samples[i]);
+            _buffer.AddValue(_samples[i]);
+            _samplesPos++;
         }
         else
         {
@@ -286,19 +333,19 @@ csmBool LAppPlaySound::Update()
     return true;
 }
 
-csmVector<csmFloat32>* LAppPlaySound::GetBuffer()
+MotionSync::CubismMotionSyncAudioBuffer<csmFloat32>* LAppAudioManager::GetBuffer()
 {
     return &_buffer;
 }
 
-csmBool LAppPlaySound::IsPlay()
+csmBool LAppAudioManager::IsPlay()
 {
     DWORD status;
     _secondary->GetStatus(&status);
     return status & DSBSTATUS_PLAYING;
 }
 
-void LAppPlaySound::Release()
+void LAppAudioManager::Release()
 {
     if (_secondary)
     {
@@ -316,10 +363,9 @@ void LAppPlaySound::Release()
         CSM_FREE(_samples);
         _samples = NULL;
     }
-    _buffer.Clear();
 }
 
-LAppPlaySound::LAppPlaySound() :
+LAppAudioManager::LAppAudioManager() :
     _secondary(NULL),
     _channels(1),
     _bitDepth(8),
@@ -327,11 +373,13 @@ LAppPlaySound::LAppPlaySound() :
     _dataSize(0),
     _dataPos(0),
     _samples(NULL),
-    _samplesSize(0)
+    _samplesSize(0),
+    _samplesPos(0),
+    _buffer()
 {
 }
 
-LAppPlaySound::~LAppPlaySound()
+LAppAudioManager::~LAppAudioManager()
 {
     Release();
 }

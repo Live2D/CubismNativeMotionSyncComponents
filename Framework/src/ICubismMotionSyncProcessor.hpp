@@ -40,6 +40,13 @@ public:
     EngineType GetType();
 
     /**
+     * @brief 解析で使用するサンプル数を取得する
+     *
+     * @return 解析で使用するサンプル数
+     */
+    csmUint32 GetRequireSampleCount();
+
+    /**
      * @brief プロセッサーの状態（解放済みかどうか）を返す
      *
      * @return プロセッサーの状態

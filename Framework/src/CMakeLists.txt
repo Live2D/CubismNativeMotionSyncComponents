@@ -21,6 +21,7 @@ target_sources(${LIB_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineVersion.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncProcessorCri.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncProcessorCri.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncAudioBuffer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncEngine.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncProcessor.cpp

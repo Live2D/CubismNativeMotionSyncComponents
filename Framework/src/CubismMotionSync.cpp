@@ -16,6 +16,14 @@ namespace Live2D { namespace Cubism { namespace Framework { namespace MotionSync
 
 CubismMotionSync* CubismMotionSync::Create(CubismModel *model, const csmByte *buffer, const csmSizeInt size, csmInt32 samplesPerSec, csmString executeAbsolutePath)
 {
+    csmString enginePath;
+
+    if (!buffer)
+    {
+        CubismLogError("Buffer is null in CubismMotionSync::Create().");
+        return NULL;
+    }
+
     CubismMotionSyncData *data = CubismMotionSyncData::Create(model, buffer, size);
 
     if (!data)
@@ -34,14 +42,19 @@ CubismMotionSync* CubismMotionSync::Create(CubismModel *model, const csmByte *bu
         switch(engineType)
         {
         case EngineType_Cri:
+            enginePath = executeAbsolutePath + MOTIONSYNC_CORE_CRI_LIB_FILE;
             engine = CubismMotionSyncEngineController::GetEngine(engineType);
             if (!engine)
             {
-                engine = CubismMotionSyncEngineController::InstallEngine(executeAbsolutePath + MOTIONSYNC_CORE_CRI_LIB_FILE);
+                engine = CubismMotionSyncEngineController::InstallEngine(enginePath);
             }
             if (engine)
             {
-                processor = dynamic_cast<CubismMotionSyncEngineCri*>(engine)->CreateProcessor(data->GetMappingInfo(i), samplesPerSec);
+                processor = static_cast<CubismMotionSyncEngineCri*>(engine)->CreateProcessor(data->GetMappingInfo(i), samplesPerSec);
+            }
+            else
+            {
+                CubismLogError("Failed Install Engine : %s", enginePath.GetRawString());
             }
             break;
         default:
@@ -63,12 +76,11 @@ void CubismMotionSync::Delete(CubismMotionSync* instance)
     CSM_DELETE_SELF(CubismMotionSync, instance);
 }
 
-void CubismMotionSync::SetSoundBuffer(csmUint32 processIndex, csmVector<csmFloat32>* buffer)
+void CubismMotionSync::SetSoundBuffer(csmUint32 processIndex, CubismMotionSyncAudioBuffer<csmFloat32>* audioBuffer)
 {
-    if(processIndex < _processorInfoList.GetSize())
+    if (processIndex < _processorInfoList.GetSize())
     {
-        _processorInfoList[processIndex]._samplesBuff = buffer;
-        _processorInfoList[processIndex]._samplesBuffIndex = 0;
+        _processorInfoList[processIndex]._samplesAudioBuff = audioBuffer;
     }
 }
 
@@ -170,10 +182,9 @@ EngineType CubismMotionSync::ToEngineType(csmString engineName)
 void CubismMotionSync::Analyze(CubismModel* model, csmUint32 processIndex)
 {
     ICubismMotionSyncProcessor* processor = _processorInfoList[processIndex]._processor;
-    csmVector<csmFloat32> *samples = _processorInfoList[processIndex]._samplesBuff;
-    csmInt32& beginIndex = _processorInfoList[processIndex]._samplesBuffIndex;
+    CubismMotionSyncAudioBuffer<csmFloat32>* samples = _processorInfoList[processIndex]._samplesAudioBuff;
 
-    if (!processor || !_processorInfoList[processIndex]._samplesBuff)
+    if (!processor || !samples)
     {
         return;
     }
@@ -184,17 +195,15 @@ void CubismMotionSync::Analyze(CubismModel* model, csmUint32 processIndex)
     csmInt32 smoothing = _processorInfoList[processIndex]._smoothing;
     csmFloat32 audioLevelEffectRatio = _processorInfoList[processIndex]._audioLevelEffectRatio;
 
-    do
-    {
-        if (samples->GetSize() == 0 || samples->GetSize() <= beginIndex)
-        {
-            break;
-        }
+    const csmUint32 sampleSize = samples->GetSize();
+    csmUint32 requireSampleCount = processor->GetRequireSampleCount();
 
+    for (csmUint32 i = requireSampleCount; i < sampleSize; i += requireSampleCount)
+    {
         switch (processor->GetType())
         {
         case EngineType_Cri:
-            analysis = dynamic_cast<CubismMotionSyncProcessorCRI*>(processor)->Analyze(*samples, beginIndex, blendRatio, smoothing, audioLevelEffectRatio, _processorInfoList[processIndex]._analysisResult);
+            analysis = static_cast<CubismMotionSyncProcessorCri*>(processor)->Analyze(samples, blendRatio, smoothing, audioLevelEffectRatio, _processorInfoList[processIndex]._analysisResult);
             break;
         default:
             break;
@@ -205,7 +214,7 @@ void CubismMotionSync::Analyze(CubismModel* model, csmUint32 processIndex)
             break;
         }
 
-        beginIndex += analysis->GetProcessedSampleCount();
+        samples->Remove(analysis->GetProcessedSampleCount());
 
         // モーションシンクライブラリで計算した内容をモデルに繁栄
         for (csmUint32 targetIndex = 0; targetIndex < _data->GetSetting(processIndex).cubismParameterList.GetSize(); targetIndex++)
@@ -235,8 +244,9 @@ void CubismMotionSync::Analyze(CubismModel* model, csmUint32 processIndex)
             // Assign value after dampening.
             _processorInfoList[processIndex]._lastDampedList[targetIndex] = cacheValue;
         }
+
+        requireSampleCount = processor->GetRequireSampleCount();
     }
-    while (analysis);
 }
 
 CubismMotionSync::CubismMotionSync(CubismModel* model, CubismMotionSyncData *data, csmVector<ICubismMotionSyncProcessor*> processorList) :

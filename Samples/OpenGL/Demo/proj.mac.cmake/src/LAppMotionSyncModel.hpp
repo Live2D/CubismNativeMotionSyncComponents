@@ -11,7 +11,7 @@
 #include <Model/CubismUserModel.hpp>
 #include "CubismMotionSync.hpp"
 #include "CubismModelMotionSyncSettingJson.hpp"
-#include "LAppPlaySound.hpp"
+#include "LAppAudioManager.hpp"
 
 /**
   * @brief ユーザーが実際に使用するモデルの実装クラス<br>
@@ -43,7 +43,7 @@ public:
      *
      * モデルの状態や描画を更新する
      */
-    void ModelOnUpdate();
+    void Update();
 
     /**
      * @brief 次の音声ファイルを再生する
@@ -57,7 +57,7 @@ private:
     Csm::csmString _modelHomeDir; ///< モデルセッティングが置かれたディレクトリ
     Csm::csmFloat32 _userTimeSeconds; ///< デルタ時間の積算値[秒]
     Csm::MotionSync::CubismMotionSync* _motionSync; ///< モーションシンク
-    LAppPlaySound _soundData; ///< モーションシンクで使用する音声データ
+    LAppAudioManager _soundData; ///< モーションシンクで使用する音声データ
     Csm::csmVector<Csm::csmString> _soundFileList; ///< 音声データファイルのリスト
     Csm::csmInt32 _soundIndex; ///< 再生する音声データのインデックス値
 
@@ -79,7 +79,7 @@ private:
      *
      * モデルのパラメータの情報を更新する
      */
-    void ModelParamUpdate();
+    void UpdateModelParam();
 
     /**
      * @brief 現在のインデックスの音声ファイルを再生する

@@ -7,10 +7,16 @@ This folder contains header files and platform-specific library files for using 
 
 | Platform | Architecture | dll | lib | Path | Note |
 | --- | --- | --- | --- | --- | --- |
-| macOS | ARM64 | ✓ |   | macos/arm64 |   |
-| macOS | x86_64 | ✓ |   | macos/x86_64 |   |
-| Windows | x86 | ✓ |   | windows/x86 |   |
-| Windows | x86_64 | ✓ |   | windows/x86_64 |   |
+| Android | ARM64 | ✓ |   | Android/arm64-v8a |   |
+| Android | ARMv7 | ✓ |   | Android/armeabi-v7a | This library is currently deprecated and will be removed in the near future. |
+| Android | x86 | ✓ |   | Android/x86 |   |
+| Android | x86_64 | ✓ |   | Android/x86_64 |   |
+| iOS | ARM64 |   | ✓ | iOS/xxx-iphoneos | iOS Devices |
+| iOS | x86_64 |   | ✓ | iOS/xxx-iphonesimulator | iOS Simulator |
+| macOS | ARM64 | ✓ |   | macOS |   |
+| macOS | x86_64 | ✓ |   | macOS |   |
+| Windows | x86 | ✓ |   | Windows/x86 |   |
+| Windows | x86_64 | ✓ |   | Windows/x86_64 |   |
 
 
 ### Calling convention

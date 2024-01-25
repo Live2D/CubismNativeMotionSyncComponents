@@ -1,16 +1,16 @@
-﻿/**
+/**
  * Copyright(c) Live2D Inc. All rights reserved.
  *
  * Use of this source code is governed by the Live2D Open Software license
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-#include "LAppPlaySound.hpp"
-#include "LAppWavFileHandler.hpp"
+#import "LAppAudioManager.h"
+#import "LAppWavFileHandler.h"
 
 using namespace Csm;
 
-csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
+csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
 {
     // 初期化
     Release();
@@ -24,6 +24,9 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     wavHandler.Start(path);
     LAppWavFileHandler::WavFileInfo wavHandlerInfo = wavHandler.GetWavFileInfo();
     _wavSamples = wavHandler.GetPcmData();
+    
+    // リングバッファ確保
+    _buffer.Resize(LAppMotionSyncDefine::CsmRingBufferSize * wavHandlerInfo._blockAlign);
     
     // 再生設定
     format.mSampleRate = wavHandlerInfo._samplingRate;
@@ -56,6 +59,7 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     
     if (status != noErr)
     {
+        CubismLogError("[APP]Failed to AudioQueueNewOutput() in LAppAudioManager::LoadFile()");
         return false;
     }
     
@@ -66,6 +70,7 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
                 
         if (status != noErr)
         {
+            CubismLogError("[APP]Failed to AudioQueueAllocateBuffer() in LAppAudioManager::LoadFile()");
             return false;
         }
         
@@ -80,6 +85,7 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     
     if (status != noErr)
     {
+        CubismLogError("[APP]Failed to AudioQueueStart() in LAppAudioManager::LoadFile()");
         return false;
     }
     
@@ -87,41 +93,36 @@ csmBool LAppPlaySound::LoadFile(csmString path, csmUint32 useChannel)
     return true;
 }
 
-csmVector<csmFloat32>* LAppPlaySound::GetBuffer()
+MotionSync::CubismMotionSyncAudioBuffer<csmFloat32>* LAppAudioManager::GetBuffer()
 {
     return &_buffer;
 }
 
-csmBool LAppPlaySound::IsPlay()
-{
-    return (_wavWritePos < _wavSamples.GetSize());
-}
-
-void LAppPlaySound::Release()
+void LAppAudioManager::Release()
 {
     AudioQueueStop(_queue, true);
     AudioQueueDispose(_queue, true);
-    _buffer.Clear();
 }
 
-LAppPlaySound::LAppPlaySound() :
+LAppAudioManager::LAppAudioManager() :
     _queueBufferSize(0),
     _queueBufferSampleCount(0),
     _wavWritePos(0),
     _useChannel(0),
     _channels(1),
-    _bitDepth(8)
+    _bitDepth(8),
+    _buffer()
 {
 }
 
-LAppPlaySound::~LAppPlaySound()
+LAppAudioManager::~LAppAudioManager()
 {
     Release();
 }
 
-void LAppPlaySound::CallBack(void* customData, AudioQueueRef queue, AudioQueueBufferRef buffer)
+void LAppAudioManager::CallBack(void* customData, AudioQueueRef queue, AudioQueueBufferRef buffer)
 {
-    LAppPlaySound* data = reinterpret_cast<LAppPlaySound*>(customData);
+    LAppAudioManager* data = reinterpret_cast<LAppAudioManager*>(customData);
     csmFloat32 *samples = reinterpret_cast<csmFloat32*>(buffer->mAudioData);
     
     if (data->_wavSamples.GetSize() <= data->_wavWritePos)
@@ -143,7 +144,7 @@ void LAppPlaySound::CallBack(void* customData, AudioQueueRef queue, AudioQueueBu
         // 解析に指定しているチャンネルのサンプルを送る。
         if ((i % 2) == data->_useChannel)
         {
-            data->_buffer.PushBack(samples[i]);
+            data->_buffer.AddValue(samples[i]);
         }
     }
     

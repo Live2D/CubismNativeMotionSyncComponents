@@ -43,6 +43,17 @@ public:
      * @return 音声データのファイルパスリスト
      */
     csmVector<csmString> GetMotionSyncSoundFileList();
+
+private:
+    // MotionSync用のJSONノードのキャッシュ
+    Utils::Value* _motionSyncJsonValue;
+
+    /**
+     * @brief motionsync3.jsonファイルがあるか返す
+     *
+     * @return motionsync3.jsonファイルがあるか
+     */
+    csmBool IsExistMotionSyncFiles() const;
 };
 
 }}}}

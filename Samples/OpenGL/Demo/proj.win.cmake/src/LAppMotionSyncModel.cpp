@@ -44,6 +44,7 @@ LAppMotionSyncModel::LAppMotionSyncModel()
     , _modelSetting(NULL)
     , _motionSync(NULL)
     , _soundIndex(0)
+    , _isMotionSync(false)
 {
 }
 
@@ -63,7 +64,7 @@ LAppMotionSyncModel::~LAppMotionSyncModel()
 
 void LAppMotionSyncModel::LoadAssets(const csmString fileName)
 {
-    _modelHomeDir = csmString(ResourcesPath) + "/" + fileName + "/";
+    _modelHomeDir = csmString(ResourcesPath) + fileName + "/";
 
     if (_debugMode)
     {
@@ -91,7 +92,7 @@ void LAppMotionSyncModel::LoadAssets(const csmString fileName)
     SetupTextures();
 }
 
-void LAppMotionSyncModel::ModelOnUpdate()
+void LAppMotionSyncModel::Update()
 {
     int width, height;
     // ウィンドウサイズを取得
@@ -113,10 +114,13 @@ void LAppMotionSyncModel::ModelOnUpdate()
     }
 
     // 音声データ更新
-    _soundData.Update();
+    if (_isMotionSync)
+    {
+        _soundData.Update();
+    }
 
     // モデルのパラメータを更新
-    ModelParamUpdate();
+    UpdateModelParam();
 
     // モデルの描画を更新
     Draw(projection); ///< 参照渡しなのでprojectionは変質する
@@ -175,28 +179,32 @@ void LAppMotionSyncModel::SetupModel()
     // MotionSync
     const csmChar* fileName = _modelSetting->GetMotionSyncJsonFileName();
 
-    if (_debugMode)
+    if (strcmp(fileName, ""))
     {
-        LAppPal::PrintLog("[APP]load motionSync setting: %s", fileName);
+        if (_debugMode)
+        {
+            LAppPal::PrintLog("[APP]load motionSync setting: %s", fileName);
+        }
+
+        const csmString path = csmString(_modelHomeDir) + fileName;
+        buffer = CreateBuffer(path.GetRawString(), &size);
+
+        _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec);
+
+        if (!_motionSync)
+        {
+            LAppPal::PrintLog("Failed to SetupModel().");
+            return;
+        }
+
+        DeleteBuffer(buffer, path.GetRawString());
+
+        // 音声データ
+        _soundFileList = _modelSetting->GetMotionSyncSoundFileList();
+        _soundIndex = 0;
+        PlayIndexSound();
+        _isMotionSync = true;
     }
-
-    const csmString path = csmString(_modelHomeDir) + fileName;
-    buffer = CreateBuffer(path.GetRawString(), &size);
-
-    _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec);
-
-    if (!_motionSync)
-    {
-        LAppPal::PrintLog("Failed to SetupModel().");
-        return;
-    }
-
-    DeleteBuffer(buffer, path.GetRawString());
-
-    // 音声データ
-    _soundFileList = _modelSetting->GetMotionSyncSoundFileList();
-    _soundIndex = 0;
-    PlayIndexSound();
 }
 
 void LAppMotionSyncModel::SetupTextures()
@@ -224,7 +232,7 @@ void LAppMotionSyncModel::SetupTextures()
     GetRenderer<Rendering::CubismRenderer_OpenGLES2>()->IsPremultipliedAlpha(false);
 }
 
-void LAppMotionSyncModel::ModelParamUpdate()
+void LAppMotionSyncModel::UpdateModelParam()
 {
         const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
         _userTimeSeconds += deltaTimeSeconds;

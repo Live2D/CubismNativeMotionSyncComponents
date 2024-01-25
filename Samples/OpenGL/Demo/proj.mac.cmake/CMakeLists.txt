@@ -79,25 +79,16 @@ target_include_directories(Framework PUBLIC ${GLEW_PATH}/include)
 # Link libraries to framework.
 target_link_libraries(Framework Live2DCubismCore glew_s)
 
-# Specify Cubism MotionSync Framework rendering.
-set(MOTIONSYNC_FRAMEWORK_SOURCE OpenGL)
 # Add Cubism Native MotionSync Framework.
 add_subdirectory(${MOTIONSYNC_FRAMEWORK_PATH} ${CMAKE_CURRENT_BINARY_DIR}/MotionSyncFramework)
-# Add rendering definition to MotionSync framework.
-target_compile_definitions(MotionSyncFramework PUBLIC CSM_TARGET_MAC_GL)
-# Add include path of GLEW to MotionSync framework.
-target_include_directories(MotionSyncFramework PUBLIC ${GLEW_PATH}/include)
-# Link libraries to MotionSync framework.
-target_link_libraries(MotionSyncFramework Live2DCubismCore glew_s)
+# Set macro to MotionSync Framework.
+target_compile_definitions(MotionSyncFramework PRIVATE MOTIONSYNC_CORE_CRI_LIB_PATH="${MOTIONSYNC_CORE_DIR}/")
 
 # Find opengl libraries.
 find_package(OpenGL REQUIRED)
 
 # Find libraries.
 find_library(AUDIOTOOLBOX_LIBRARY AudioToolBox)
-
-# Set macro to MotionSync Framework.
-target_compile_definitions(MotionSyncFramework PRIVATE MOTIONSYNC_CORE_CRI_LIB_PATH="${MOTIONSYNC_CORE_DIR}/")
 
 # Make executable app.
 add_executable(${APP_NAME})
@@ -131,20 +122,3 @@ add_custom_command(
     ${CMAKE_COMMAND} -E
       copy_directory ${MOTIONSYNC_CRI_LIB_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/${MOTIONSYNC_CORE_DIR}
 )
-
-# You can change target that renderer draws by enabling following definition.
-#
-# * USE_RENDER_TARGET
-#   Renderer draws to target of LAppView.
-# * USE_MODEL_RENDER_TARGET
-#   Renderer draws to target of each LAppModel.
-# * default
-#   Renderer draws to default main framebuffer.
-#
-# INFO: USE_RENDER_TARGET has higher priority than USE_MODEL_RENDER_TARGET.
-#
-# target_compile_definitions(${APP_NAME}
-#   PRIVATE
-#     USE_RENDER_TARGET
-#     USE_MODEL_RENDER_TARGET
-# )

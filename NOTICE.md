@@ -4,21 +4,9 @@
 
 # Notices
 
-## [Restrictions] Supported environments for Cubism SDK MotionSync Plugin for Native (2023-10-17)
+## [Restrictions] Supported environments for Cubism SDK MotionSync Plugin for Native (2023-12-21)
 
-As of version R1 beta1 (5-r.1-beta.1) of this plugin, only the following environments have been confirmed to work:
-
-* Windows
-  * x86
-  * x86_64
-* macOS
-  * x86_64
-  * ARM64
-
-The following environments will be supported in due course:
-
-* Android
-* iOS
+When executing microphone input in iPhoneSimulator, please connect the input device in advance.
 
 ---
 

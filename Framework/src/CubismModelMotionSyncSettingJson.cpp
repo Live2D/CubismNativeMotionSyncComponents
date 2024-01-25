@@ -18,6 +18,10 @@ const csmChar* MotionSync = "MotionSync";
 CubismModelMotionSyncSettingJson::CubismModelMotionSyncSettingJson(const csmByte* buffer, csmSizeInt size) :
     CubismModelSettingJson(buffer, size)
 {
+	if (_json)
+	{
+		_motionSyncJsonValue = &_json->GetRoot()[FileReferences][MotionSync];
+	}
 }
 
 CubismModelMotionSyncSettingJson::~CubismModelMotionSyncSettingJson()
@@ -26,6 +30,10 @@ CubismModelMotionSyncSettingJson::~CubismModelMotionSyncSettingJson()
 
 const csmChar* CubismModelMotionSyncSettingJson::GetMotionSyncJsonFileName()
 {
+	if (!IsExistMotionSyncFiles())
+	{
+		return "";
+	}
 	return _json->GetRoot()[FileReferences][MotionSync].GetRawString();
 }
 
@@ -40,11 +48,21 @@ csmVector<csmString> CubismModelMotionSyncSettingJson::GetMotionSyncSoundFileLis
 
 		for (csmUint32 j = 0; j < GetMotionCount(groupName); j++)
 		{
-			list.PushBack(GetMotionSoundFileName(groupName, j));
+			const csmChar* fileName = GetMotionSoundFileName(groupName, j);
+
+			if (strlen((fileName)))
+			{
+				list.PushBack(fileName);
+			}
 		}
 	}
 
 	return list;
 }
 
+csmBool CubismModelMotionSyncSettingJson::IsExistMotionSyncFiles() const
+{
+	Utils::Value& node = *_motionSyncJsonValue;
+	return !node.IsNull() && !node.IsError();
+}
 }}}}

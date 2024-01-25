@@ -17,6 +17,12 @@ namespace LAppMotionSyncDefine {
     // AudioQueue の再生バッファに設定されるサンプル数
     const csmInt32 AudioQueueBufferSampleCount = 2048;
 
+    // マイクからの入力を溜めておくバッファの大きさ
+    const csmUint32 CsmInputBufferSize = 32;
+
+    // リングバッファの大きさ
+    const csmUint32 CsmRingBufferSize = 4096;
+
     // 早送り
     const csmChar* FastForwardImageName = "icon_fastForward.png";
 

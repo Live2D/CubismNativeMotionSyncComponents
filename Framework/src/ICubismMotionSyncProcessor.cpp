@@ -31,6 +31,11 @@ EngineType ICubismMotionSyncProcessor::GetType()
     return _engine->GetType();
 }
 
+csmUint32 ICubismMotionSyncProcessor::GetRequireSampleCount()
+{
+    return _engine->GetEngineHandle()->GetRequireSampleCount(GetContextHandle()->Context());
+}
+
 Framework::csmBool ICubismMotionSyncProcessor::IsClosed()
 {
     return _contextHandle == NULL;

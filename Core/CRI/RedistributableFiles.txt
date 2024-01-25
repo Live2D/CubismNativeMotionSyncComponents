@@ -1,9 +1,15 @@
 The following is a list of files available for redistribution
 under the terms of the Live2D Proprietary Software License Agreement:
 
-- dll/macos/libLive2DCubismMotionSyncEngine_CRI.dylib
-- dll/macos/Live2DCubismMotionSyncEngine_CRI.bundle
-- dll/windows/x86/Live2DCubismMotionSyncEngine_CRI.dll
-- dll/windows/x86/Live2DCubismMotionSyncEngine_CRI.lib
-- dll/windows/x86_64/Live2DCubismMotionSyncEngine_CRI.dll
-- dll/windows/x86_64/Live2DCubismMotionSyncEngine_CRI.lib
+- dll/Android/arm64-v8a/libLive2DCubismMotionSyncEngine_CRI.so
+- dll/Android/armeabi-v7a/libLive2DCubismMotionSyncEngine_CRI.so
+- dll/Android/x86/libLive2DCubismMotionSyncEngine_CRI.so
+- dll/Android/x86_64/libLive2DCubismMotionSyncEngine_CRI.so
+- dll/macOS/libLive2DCubismMotionSyncEngine_CRI.dylib
+- dll/macOS/Live2DCubismMotionSyncEngine_CRI.bundle
+- dll/Windows/x86/Live2DCubismMotionSyncEngine_CRI.dll
+- dll/Windows/x86/Live2DCubismMotionSyncEngine_CRI.lib
+- dll/Windows/x86_64/Live2DCubismMotionSyncEngine_CRI.dll
+- dll/Windows/x86_64/Live2DCubismMotionSyncEngine_CRI.lib
+- lib/iOS/Release-iphoneos/Live2DCubismMotionSyncEngine_CRI.a
+- lib/iOS/Release-iphonesimulator/Live2DCubismMotionSyncEngine_CRI.a

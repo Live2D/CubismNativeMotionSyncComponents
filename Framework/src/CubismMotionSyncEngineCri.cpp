@@ -13,9 +13,10 @@ namespace
 {
 csmUint32 SampleRateMin = 16000;
 csmUint32 SampleRateMax = 128000;
+csmUint32 DefaultBitDepth = 32;
 }
 
-CubismMotionSyncProcessorCRI* CubismMotionSyncEngineCri::CreateProcessor(csmVector<CubismMotionSyncEngineMappingInfo> mappingInfoArray, csmInt32 sampleRate)
+CubismMotionSyncProcessorCri* CubismMotionSyncEngineCri::CreateProcessor(csmVector<CubismMotionSyncEngineMappingInfo> mappingInfoArray, csmInt32 sampleRate)
 {
     if (IsClosed())
     {
@@ -31,7 +32,7 @@ CubismMotionSyncProcessorCRI* CubismMotionSyncEngineCri::CreateProcessor(csmVect
         return NULL;
     }
 
-    const MotionSyncContextConfig_CRI contextConfig(sampleRate, DEFAULT_AUDIO_BIT_DEPTH);
+    const MotionSyncContextConfig_CRI contextConfig(sampleRate, DefaultBitDepth);
     MappingInfoListMapper* const mapper = CSM_NEW MappingInfoListMapper();
     mapper->SetJObject(mappingInfoArray);
 
@@ -44,13 +45,13 @@ CubismMotionSyncProcessorCRI* CubismMotionSyncEngineCri::CreateProcessor(csmVect
     }
     MotionSyncContext* contextHandle = CSM_NEW MotionSyncContext(context, mapper);
 
-    CubismMotionSyncProcessorCRI *processor = CSM_NEW CubismMotionSyncProcessorCRI(this, contextHandle, mappingInfoArray, sampleRate, DEFAULT_AUDIO_BIT_DEPTH);
+    CubismMotionSyncProcessorCri *processor = CSM_NEW CubismMotionSyncProcessorCri(this, contextHandle, mappingInfoArray, sampleRate, DefaultBitDepth);
     _processors.PushBack(processor);
 
     return processor;
 }
 
-CubismMotionSyncEngineCri::CubismMotionSyncEngineCri(CubismMotionSyncEngineLib* engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version) :
+CubismMotionSyncEngineCri::CubismMotionSyncEngineCri(ICubismMotionSyncEngineLib* engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version) :
     ICubismMotionSyncEngine(engineHandle, type, name, version)
 {
 }

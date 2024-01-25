@@ -1,0 +1,64 @@
+#!/usr/bin/env sh
+
+set -ue
+
+SCRIPT_PATH=$(cd $(dirname $0) && pwd)
+CMAKE_PATH=$SCRIPT_PATH/..
+BUILD_PATH=$SCRIPT_PATH/../build/proj_xcode
+
+# Find samples path.
+SAMPLES_PATH=$CMAKE_PATH/../../../../../CubismNativeSamples
+if [ ! -d "$SAMPLES_PATH" ]; then
+  TMP_DIR=("${CMAKE_PATH}/../../../../../CubismSdkForNative*")
+  for DIR in "${CMAKE_PATH}/../../../../.."/*; do
+    BASE_NAME="$(basename "$DIR")"
+    if [[ "$BASE_NAME" == CubismSdkForNative* && ! "$BASE_NAME" == *.zip ]]; then
+      SAMPLES_PATH=$DIR
+      break
+    fi
+  done
+fi
+
+THIRD_PARTY_PATH=$SAMPLES_PATH/Samples/OpenGL/thirdParty
+
+PLATFORM=NONE
+NAME=unknown
+MICROPHONE_DEMO=NONE
+PS3="Select the platform number to use: "
+select var in 'iphoneOS (arm64)' 'iphoneOS Simulator (x86_64)'
+do
+  case "$var" in
+    'iphoneOS (arm64)' ) PLATFORM=OS64; NAME=iphoneos ;;
+    'iphoneOS Simulator (x86_64)' ) PLATFORM=SIMULATOR64; NAME=iphonesimulator ;;
+    * ) echo "Invalid option $REPLY." ;;
+  esac
+  break
+done
+
+if [ "$PLATFORM" = NONE ]; then
+  exit -1
+fi
+
+PS3="Select the demo type number to use: "
+select var in 'SoundFile' 'Microphone'
+do
+  case "$var" in
+    'SoundFile' ) MICROPHONE_DEMO=OFF ;;
+    'Microphone' ) MICROPHONE_DEMO=ON ;;
+    * ) echo "Invalid option $REPLY." ;;
+  esac
+  break
+done
+
+if [ "$MICROPHONE_DEMO" = NONE ]; then
+  exit -1
+fi
+
+# Run CMake.
+cmake -S "$CMAKE_PATH" \
+  -B "${BUILD_PATH}_${NAME}" \
+  -D CMAKE_TOOLCHAIN_FILE="$THIRD_PARTY_PATH/ios-cmake/ios.toolchain.cmake" \
+  -D PLATFORM=$PLATFORM \
+  -D NATIVE_PATH=$SAMPLES_PATH \
+  -D CSM_MOTIONSYNC_MICROPHONE_DEMO="$MICROPHONE_DEMO" \
+  -G Xcode

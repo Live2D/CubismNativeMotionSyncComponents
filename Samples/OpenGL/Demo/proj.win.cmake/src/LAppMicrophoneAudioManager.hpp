@@ -9,10 +9,11 @@
 
 #include <dsound.h>
 #include "LAppMotionSyncDefine.hpp"
+#include "CubismMotionSyncAudioBuffer.hpp"
 #include "Type/csmString.hpp"
 #include "Type/csmVector.hpp"
 
-class LAppPlaySound
+class LAppMicrophoneAudioManager
 {
 public:
     /**
@@ -32,14 +33,11 @@ public:
     static Csm::csmBool Close();
 
     /**
-     * @brief 音声ファイル読み込み
+     * @brief マイク入力の初期化
      *
-     * @param[in]   path    音声ファイル
-     * @param[in]   useChannel    使用するチャンネル
-     *
-     * @return 読み込み結果
+     * @return マイク入力の初期化
      */
-    Csm::csmBool LoadFile(Csm::csmString path, Csm::csmUint32 useChannel);
+    Csm::csmBool SetupMicrophone(Csm::csmUint32 channels, Csm::csmUint32 samplesRate, Csm::csmUint32 bitDepth, Csm::csmUint32 useChannel);
 
     /**
      * @brief 音声の更新
@@ -53,14 +51,7 @@ public:
      *
      * @return バッファ
      */
-    Csm::csmVector<Csm::csmFloat32>* GetBuffer();
-
-    /**
-     * @brief 再生中か確認
-     *
-     * @return 再生中か
-     */
-    Csm::csmBool IsPlay();
+    Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32>* GetBuffer();
 
     /**
      * @brief 解放処理
@@ -74,31 +65,31 @@ public:
      * コンストラクタ。
      *
      */
-    LAppPlaySound();
+    LAppMicrophoneAudioManager();
 
     /**
      * @brief デストラクタ
      *
      * デストラクタ。
      */
-    virtual ~LAppPlaySound();
+    virtual ~LAppMicrophoneAudioManager();
 
 private:
-    enum WritePosition
-    {
-        WritePosition_Front,
-        WritePosition_Back,
-    };
-
+    LPDIRECTSOUNDCAPTURE8 _soundCapture;
+    LPDIRECTSOUNDCAPTUREBUFFER _captureBuffer;
     LPDIRECTSOUNDBUFFER _secondary;
+    // 使用するチャンネル数
     Csm::csmInt32 _channels;
+    // 使用するビット深度
     Csm::csmInt32 _bitDepth;
-    WritePosition _writePosition;
+    // 音声再生用のバッファの大きさ
     Csm::csmUint32 _bufferSampleBytes;
-    Csm::csmByte* _data;
-    Csm::csmUint64 _dataSize;
-    Csm::csmUint64 _dataPos;
-    Csm::csmFloat32* _samples;
-    Csm::csmUint32 _samplesSize;
-    Csm::csmVector<Csm::csmFloat32> _buffer;
+    // 使用するチャンネル
+    Csm::csmInt32 _useChannel;
+    // 録音時の読み込み位置
+    DWORD _inputPos;
+    // 再生時の書き込み位置
+    DWORD _outputPos;
+    // MotionSyncで使用するバッファ
+    Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32> _buffer;
 };

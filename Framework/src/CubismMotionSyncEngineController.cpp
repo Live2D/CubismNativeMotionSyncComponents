@@ -10,6 +10,9 @@
 #include "CubismMotionSyncEngineVersion.hpp"
 #include "CubismMotionSyncEngineCri.hpp"
 #include "Lib/CubismMotionSyncEngineLib.hpp"
+#ifdef CSM_MOTIONSYNC_USE_STATIC_LIB
+#include "Lib/CubismMotionSyncEngineStaticLib.hpp"
+#endif
 
 namespace Live2D { namespace Cubism { namespace Framework { namespace MotionSync {
 
@@ -19,19 +22,27 @@ ICubismMotionSyncEngine* CubismMotionSyncEngineController::InstallEngine(csmStri
 {
     struct stat statBuf;
 
+#ifndef CSM_MOTIONSYNC_USE_STATIC_LIB
+    // 動的ライブラリの使用
+
     // 渡されたパスにファイルが存在するかチェック
     if (stat(dllFilePath.GetRawString(), &statBuf) != 0)
     {
         return NULL;
     }
 
-    CubismMotionSyncEngineLib* engineHandle = CSM_NEW CubismMotionSyncEngineLib();
+    ICubismMotionSyncEngineLib* engineHandle = CSM_NEW CubismMotionSyncEngineLib();
     if (!engineHandle->LoadLibrary(dllFilePath.GetRawString()))
     {
         CSM_DELETE(engineHandle);
         return NULL;
     }
+#else
+    // 静的ライブラリの使用
 
+    ICubismMotionSyncEngineLib* engineHandle = CSM_NEW CubismMotionSyncEngineStaticLib();
+#endif
+    
     csmString engineName = engineHandle->GetEngineName();
     EngineType engineType = ToEngineType(engineName);
     csmInt32 nativeVersion = engineHandle->GetEngineVersion();

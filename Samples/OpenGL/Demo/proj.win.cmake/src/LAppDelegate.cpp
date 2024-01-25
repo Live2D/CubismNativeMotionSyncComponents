@@ -15,9 +15,8 @@
 #include "LAppPal.hpp"
 #include "LAppDefine.hpp"
 #include "LAppMotionSyncDefine.hpp"
-#include "LAppMotionSyncModel.hpp"
 #include "LAppTextureManager.hpp"
-#include "LAppPlaySound.hpp"
+#include "LAppAudioManager.hpp"
 
 using namespace Csm;
 using namespace std;
@@ -67,7 +66,7 @@ bool LAppDelegate::Initialize()
     }
 
     // Windowの生成
-    _window = glfwCreateWindow(LAppDefine::RenderTargetWidth, LAppDefine::RenderTargetHeight, "SIMPLE_SAMPLE", NULL, NULL);
+    _window = glfwCreateWindow(LAppDefine::RenderTargetWidth, LAppDefine::RenderTargetHeight, "SOUND_FILE_SAMPLE", NULL, NULL);
     if (_window == NULL)
     {
         LAppPal::PrintLog("Can't create GLFW window.");
@@ -104,7 +103,7 @@ bool LAppDelegate::Initialize()
     glViewport(0, 0, _windowWidth, _windowHeight);
 
     // サウンド初期化
-    LAppPlaySound::Init(glfwGetWin32Window(_window), Channels, SamplesPerSec, BitDepth);
+    LAppAudioManager::Init(glfwGetWin32Window(_window), Channels, SamplesPerSec, BitDepth);
 
     // Cubism SDK の初期化
     InitializeCubism();
@@ -136,7 +135,7 @@ void LAppDelegate::Release()
     // モデルデータの解放
     delete _userModel;
 
-    //　ボタンや拝啓削除
+    //　ボタンや背景削除
     delete _back;
     delete _fastForward;
     delete _gear;
@@ -152,7 +151,7 @@ void LAppDelegate::Release()
     glfwTerminate();
 
     // サウンドリリース
-    LAppPlaySound::Close();
+    LAppAudioManager::Close();
 
     // Cubism SDK の解放
     Csm::CubismFramework::Dispose();
@@ -203,7 +202,7 @@ void LAppDelegate::Run()
         _power->Render();
 
         // モデルの更新及び描画
-        _userModel->ModelOnUpdate();
+        _userModel->Update();
 
         // バッファの入れ替え
         glfwSwapBuffers(_window);

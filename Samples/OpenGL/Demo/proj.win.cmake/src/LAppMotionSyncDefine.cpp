@@ -11,8 +11,12 @@ namespace LAppMotionSyncDefine {
 
     using namespace Csm;
 
-    // DirectSount の再生バッファに設定されるサンプル数
-    const csmUint32 DirectSoundBufferSampleCount = 8192; 
+    // DirectSount の再生バッファに設定されるサンプル数(音声ファイル再生時)
+    const csmUint32 DirectSoundBufferSoundFileSampleCount = 8192;
+    // DirectSount の再生バッファに設定されるサンプル数(マイク入力時)
+    const csmUint32 DirectSoundBufferMicrophoneSampleCount = 73728; // 65536 + 8192
+    // リングバッファの大きさ
+    const csmUint32 CsmRingBufferSize = 4096;
 
     // 早送り
     const csmChar* FastForwardImageName = "icon_fastForward.png";

@@ -29,6 +29,12 @@ target_include_directories(${LIB_NAME}
 # The following expressions are written for compatibility
 # and will be removed in a future release.
 
+# Add Cubism Core include.
+target_include_directories(${LIB_NAME}
+  PRIVATE
+    $CACHE{NATIVE_PATH}/Core/include
+)
+
 # Add Motion Sync cri include.
 target_include_directories(${LIB_NAME}
   PRIVATE
@@ -39,10 +45,4 @@ target_include_directories(${LIB_NAME}
 target_include_directories(${LIB_NAME}
   PRIVATE
     ${SDK_ROOT_PATH}/Core/include
-)
-
-# Add definitions.
-target_compile_definitions(${LIB_NAME}
-  PRIVATE
-    ${MOTIONSYNC_FRAMEWORK_DEFINITIOINS}
 )

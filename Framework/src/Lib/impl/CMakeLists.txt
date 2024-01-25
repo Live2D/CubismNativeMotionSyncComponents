@@ -1,9 +1,7 @@
 if(WIN32)
     set(LIBRARY_LOADER "Win")
-elseif(CMAKE_HOST_APPLE)
-    set(LIBRARY_LOADER "Mac")
 else()
-
+    set(LIBRARY_LOADER "Other")
 endif()
 
 target_sources(${LIB_NAME}

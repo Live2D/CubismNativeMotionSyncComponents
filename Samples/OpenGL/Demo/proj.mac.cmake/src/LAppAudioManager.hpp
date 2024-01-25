@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright(c) Live2D Inc. All rights reserved.
  *
  * Use of this source code is governed by the Live2D Open Software license
@@ -9,10 +9,11 @@
 
 #include <AudioToolbox/AudioQueue.h>
 #include "LAppMotionSyncDefine.hpp"
+#include "CubismMotionSyncAudioBuffer.hpp"
 #include "Type/csmString.hpp"
 #include "Type/csmVector.hpp"
 
-class LAppPlaySound
+class LAppAudioManager
 {
 public:
     /**
@@ -30,14 +31,7 @@ public:
      *
      * @return バッファ
      */
-    Csm::csmVector<Csm::csmFloat32>* GetBuffer();
-
-    /**
-     * @brief 再生中か確認
-     *
-     * @return 再生中か
-     */
-    Csm::csmBool IsPlay();
+    Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32>* GetBuffer();
 
     /**
      * @brief 解放処理
@@ -51,25 +45,31 @@ public:
      * コンストラクタ。
      *
      */
-    LAppPlaySound();
+    LAppAudioManager();
 
     /**
      * @brief デストラクタ
      *
      * デストラクタ。
      */
-    virtual ~LAppPlaySound();
+    virtual ~LAppAudioManager();
 
 private:
     AudioQueueRef _queue;
     Csm::csmUint32 _queueBufferSize;
     Csm::csmUint32 _queueBufferSampleCount;
+    // wavデータ
     Csm::csmVector<Csm::csmFloat32> _wavSamples;
+    // wavデータ書き込み位置
     Csm::csmUint32 _wavWritePos;
+    // 使用するチャンネル
     Csm::csmUint32 _useChannel;
+    // 使用するチャンネル数
     Csm::csmInt32 _channels;
+    // 使用するビット深度
     Csm::csmInt32 _bitDepth;
-    Csm::csmVector<Csm::csmFloat32> _buffer;
+    // MotionSyncで使用するバッファ
+    Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32> _buffer;
     
     /**
      * @brief コールバック処理

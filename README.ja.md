@@ -26,7 +26,7 @@ Cubism SDK for Native上で、モーションシンク機能を利用するた�
 
 Live2D Cubism Editor で出力したモーションシンク対応モデルを表示するアプリケーションのサンプル実装です。
 
-利用するにはCubism SDK for Nativeのパッケージが必要となります。
+利用するには最新のCubism SDK for Nativeのパッケージが必要となります。
 SDKパッケージのダウンロードページをお探しの場合は、[ダウンロードページ](https://www.live2d.com/sdk/download/native/)にアクセスしてください。
 このリポジトリと同じ階層にCubism SDK for Nativeのパッケージを置いてください。
 
@@ -92,23 +92,47 @@ Demo
 
 | 開発ツール | バージョン |
 | --- | --- |
-| CMake | 3.27.1 |
+| Android Studio | Hedgehog 2023.1.1 |
+| CMake | 3.28.1 |
 | Visual Studio 2013 | Update 5 |
 | Visual Studio 2015 | Update 3 |
-| Visual Studio 2017 | 15.9.56 |
-| Visual Studio 2019 | 16.11.29 |
-| Visual Studio 2022 | 17.7.0 |
-| Xcode | 14.3.1 |
+| Visual Studio 2017 | 15.9.59 |
+| Visual Studio 2019 | 16.11.33 |
+| Visual Studio 2022 | 17.8.4 |
+| Xcode | 15.1 |
+
+### Android
+
+| Android SDK tools | バージョン |
+| --- | --- |
+| Android NDK | 25.2.9519653 |
+| Android SDK | 34.0.0 |
+| CMake | 3.22.1 |
 
 
 ## 動作確認環境
 
 | プラットフォーム | バージョン |
 | --- | --- |
-| macOS | 13.6 |
+| iOS / iPadOS | 16.6.1 |
+| macOS | 14.1.1 |
 | Windows 10 | 22H2 |
 | Windows 11 | 22H2 |
-ほかのプラットフォームは順次対応します。
+
+### Android
+
+| バージョン | デバイス | Tegra |
+| --- | --- | --- |
+| 13 | Pixel 7a | |
+| 7.1.1 | Nexus 9 | ✔︎ |
+
+
+## サウンドデバイス
+
+入出力用のサウンドデバイスは、既定のデバイスが使用される仕様です。
+
+本サンプルでは入力した音声がデバイスの音声再生機器へそのまま再生されます。
+ご利用の環境によってはハウリングする場合がございますので、サンプルアプリケーションやデバイスの音声再生機器を一度ミュートにするか、マイクとスピーカーの位置を離してご利用ください。
 
 
 ## プロジェクトへの貢献

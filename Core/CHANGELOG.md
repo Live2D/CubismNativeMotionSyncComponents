@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## 2023-11-30
+
+### Added
+
+* [Web] Add library for Emscripten 3.1.8 version build.
+
+### Changed
+
+* Upgrade Core version to 05.00.0004.
+
+### Fixed
+
+* [Native] Fix an issue with incorrect file paths listed in `RedistributableFiles.txt` and `README.md`.
+* Fix a issue with incorrect function names in `csmMotionSync_DeleteContext` logs.
+
+
+## 2023-11-14
+
+### Added
+
+* [Unity] Add library for Emscripten 3.1.8 version build.
+
+### Changed
+
+* Upgrade Core version to 05.00.0003.
+
+
 ## 2023-10-17
 
 ### Changed

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "CubismMotionSyncProcessorCRI.hpp"
+#include "CubismMotionSyncProcessorCri.hpp"
 #include "ICubismMotionSyncEngine.hpp"
 
 //--------- LIVE2D NAMESPACE ------------
@@ -23,7 +23,7 @@ public:
      * @param sampleRate サンプリングレート(16000~128000)
      * @return プロセッサーのインスタンス
      */
-    CubismMotionSyncProcessorCRI* CreateProcessor(csmVector<CubismMotionSyncEngineMappingInfo> mappingInfoArray, csmInt32 sampleRate);
+    CubismMotionSyncProcessorCri* CreateProcessor(csmVector<CubismMotionSyncEngineMappingInfo> mappingInfoArray, csmInt32 sampleRate);
 
     /**
      * @brief コンストラクタ
@@ -35,7 +35,7 @@ public:
      * @param[in]   name            エンジンの名前
      * @param[in]   version         エンジンのバージョン
      */
-    CubismMotionSyncEngineCri(CubismMotionSyncEngineLib* engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version);
+    CubismMotionSyncEngineCri(ICubismMotionSyncEngineLib* engineHandle, EngineType type, csmString name, CubismMotionSyncEngineVersion version);
 
     /**
      * @brief デストラクタ

@@ -18,7 +18,6 @@
 #include "LAppMotionSyncDefine.hpp"
 #include "LAppMotionSyncModel.hpp"
 #include "LAppTextureManager.hpp"
-#include "LAppPlaySound.hpp"
 
 using namespace Csm;
 using namespace std;
@@ -194,7 +193,7 @@ void LAppDelegate::Run()
         _power->Render();
 
         // モデルの更新及び描画
-        _userModel->ModelOnUpdate();
+        _userModel->Update();
 
         // バッファの入れ替え
         glfwSwapBuffers(_window);

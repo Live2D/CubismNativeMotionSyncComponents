@@ -34,7 +34,7 @@ if "%SELECTED%" equ "1" (
   set ARCHITECTURE=x64
   set CMAKE_A_OPTION=x64
 ) else (
-  echo [CubismNativeSamples] Invalid option.
+  echo [CubismNativeMotionSyncSamples] Invalid option.
   exit /b 1
 )
 
@@ -52,7 +52,25 @@ if "%SELECTED%" equ "1" (
 ) else if "%SELECTED%" equ "2" (
   set CORE_CRL_MD=OFF
 ) else (
-  echo [CubismNativeSamples] Invalid option.
+  echo [CubismNativeMotionSyncSamples] Invalid option.
+  exit /b 1
+)
+
+rem Demo application selection
+echo.
+echo Select which Demo to build.
+echo **************************************************
+echo 1. SoundFile Demo
+echo 2. Microphone Demo
+echo.
+choice /c:12 /n /m ">"
+set SELECTED=%errorlevel%
+if "%SELECTED%" equ "1" (
+  set MICROPHONE_DEMO=OFF
+) else if "%SELECTED%" equ "2" (
+  set MICROPHONE_DEMO=ON
+) else (
+  echo [CubismNativeMotionSyncSamples] Invalid option.
   exit /b 1
 )
 
@@ -62,7 +80,7 @@ rem ========
 
 rem Make sure toolchain exists.
 if not exist "%VCVARSALL%" (
-  echo [CubismNativeSamples] Visual C++ Compiler %MSVC_VERSION% not found.
+  echo [CubismNativeMotionSyncSamples] Visual C++ Compiler %MSVC_VERSION% not found.
   exit /b 1
 )
 
@@ -90,6 +108,7 @@ if "%GENERATOR%" equ "nmake" (
   cmake -S .. -B "%BUILD_PATH%" ^
     -G "NMake Makefiles" ^
     -D CMAKE_BUILD_TYPE="Release" ^
+    -D CSM_MOTIONSYNC_MICROPHONE_DEMO=%MICROPHONE_DEMO% ^
     -D CORE_CRL_MD=%CORE_CRL_MD%
   if %errorlevel% neq 0 exit /b %errorlevel%
   cd "%BUILD_PATH%" && nmake
@@ -98,10 +117,11 @@ if "%GENERATOR%" equ "nmake" (
   cmake -S .. -B "%BUILD_PATH%" ^
     -G "Visual Studio %MSVC_NUMBER% %MSVC_VERSION%" ^
     -A %CMAKE_A_OPTION% ^
+    -D CSM_MOTIONSYNC_MICROPHONE_DEMO=%MICROPHONE_DEMO% ^
     -D CORE_CRL_MD=%CORE_CRL_MD%
   if %errorlevel% neq 0 exit /b %errorlevel%
 ) else (
-  echo [CubismNativeSamples] Invalid option.
+  echo [CubismNativeMotionSyncSamples] Invalid option.
   goto :error
 )
 

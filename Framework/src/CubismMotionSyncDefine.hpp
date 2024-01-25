@@ -11,6 +11,10 @@
 #define MOTIONSYNC_CORE_CRI_LIB_NAME "Live2DCubismMotionSyncEngine_CRI.dll"
 #elif __MACH__
 #define MOTIONSYNC_CORE_CRI_LIB_NAME "libLive2DCubismMotionSyncEngine_CRI.dylib"
+#elif __ANDROID__
+#define MOTIONSYNC_CORE_CRI_LIB_NAME "libLive2DCubismMotionSyncEngine_CRI.so"
+#else
+#define MOTIONSYNC_CORE_CRI_LIB_NAME 
 #endif
 
 #define MOTIONSYNC_CORE_CRI_LIB_FILE MOTIONSYNC_CORE_CRI_LIB_PATH MOTIONSYNC_CORE_CRI_LIB_NAME

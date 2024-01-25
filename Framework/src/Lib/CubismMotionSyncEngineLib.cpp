@@ -27,7 +27,8 @@ inline Csm::csmBool ConvertMotionSyncBool(Csm::csmInt32 value)
     }
 }
 
-CubismMotionSyncEngineLib::CubismMotionSyncEngineLib()
+CubismMotionSyncEngineLib::CubismMotionSyncEngineLib() :
+    ICubismMotionSyncEngineLib()
 {
     _engineIf = CSM_NEW CubismMotionSyncEngineLoader();
 }

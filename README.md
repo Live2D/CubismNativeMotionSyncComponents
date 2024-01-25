@@ -22,7 +22,7 @@ Please read the [notices](NOTICE.md) before use.
 
 #### Cubism SDK for Native
 
-This plugin is a Cubism SDK plugin for the Cubism SDK for Native.
+This plugin is a Cubism SDK plugin for the latest Cubism SDK for Native.
 
 The Cubism SDK for Native package is required for use.
 
@@ -84,23 +84,48 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 | Development Tool | Version |
 | --- | --- |
-| CMake | 3.27.1 |
+| Android Studio | Hedgehog 2023.1.1 |
+| CMake | 3.28.1 |
 | Visual Studio 2013 | Update 5 |
 | Visual Studio 2015 | Update 3 |
-| Visual Studio 2017 | 15.9.56 |
-| Visual Studio 2019 | 16.11.29 |
-| Visual Studio 2022 | 17.7.0 |
-| Xcode | 14.3.1 |
+| Visual Studio 2017 | 15.9.59 |
+| Visual Studio 2019 | 16.11.33 |
+| Visual Studio 2022 | 17.8.4 |
+| Xcode | 15.1 |
+
+### Android
+
+| Android SDK tools | Version |
+| --- | --- |
+| Android NDK | 25.2.9519653 |
+| Android SDK | 34.0.0 |
+| CMake | 3.22.1 |
 
 
 ## Operation environment
 
 | Platform | Version |
 | --- | --- |
-| macOS | 13.6 |
+| iOS / iPadOS | 16.6.1 |
+| macOS | 14.1.1 |
 | Windows 10 | 22H2 |
 | Windows 11 | 22H2 |
-We will gradually support other platforms.
+
+### Android
+
+| Version | Device | Tegra |
+| --- | --- | --- |
+| 13 | Pixel 7a | |
+| 7.1.1 | Nexus 9 | ✔︎ |
+
+
+## Sound device
+
+The sound device for input/output is a specification whereby the default device is used.
+
+In this sample, the input sound is played directly through the device's sound playback system.
+ Depending on your environment, feedback may occur. To prevent this, please mute the sample application and the device's sound playback, or move the microphone and speaker away from each other.
+
 
 ## Contribution to the project
 

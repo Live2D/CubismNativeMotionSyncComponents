@@ -11,6 +11,7 @@
 #include "CubismMotionSyncData.hpp"
 #include "CubismMotionSyncEngineAnalysisResult.hpp"
 #include "ICubismMotionSyncProcessor.hpp"
+#include "CubismMotionSyncAudioBuffer.hpp"
 #include "Type/csmVector.hpp"
 
 namespace Live2D { namespace Cubism { namespace Framework { namespace MotionSync {
@@ -53,7 +54,7 @@ public:
      * @param[in]   processIndex プロセッサーインデックス
      * @param[in]   buffer バッファ
      */
-    void SetSoundBuffer(csmUint32 processIndex, csmVector<csmFloat32>* buffer);
+    void SetSoundBuffer(csmUint32 processIndex, CubismMotionSyncAudioBuffer<csmFloat32>* audioBuffer);
 
     /**
      * @brief モデルのパラメータの更新
@@ -113,8 +114,7 @@ private:
             _smoothing(1),
             _sampleRate(30.0f),
             _audioLevelEffectRatio(0.0f),
-            _samplesBuff(NULL),
-            _samplesBuffIndex(0),
+            _samplesAudioBuff(NULL),
             _model(model),
             _currentRemainTime(0.0f)
         {
@@ -153,8 +153,7 @@ private:
         csmInt32 _smoothing;
         csmFloat32 _sampleRate;
         csmFloat32 _audioLevelEffectRatio;
-        csmVector<csmFloat32>* _samplesBuff;
-        csmInt32 _samplesBuffIndex;
+        CubismMotionSyncAudioBuffer<csmFloat32>* _samplesAudioBuff;
         CubismModel *_model;
         CubismMotionSyncEngineAnalysisResult *_analysisResult;
         csmFloat32 _currentRemainTime;

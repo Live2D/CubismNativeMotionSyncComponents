@@ -6,7 +6,9 @@
  */
 
 #import "LAppMicrophoneAudioManager.h"
+#import <AVFoundation/AVAudioSession.h>
 #import "LAppWavFileHandler.h"
+#import "LAppPal.h"
 
 using namespace Csm;
 
@@ -19,7 +21,18 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(Csm::csmUint32 channels, Csm
     AudioQueueBufferRef inputBuffers[LAppMotionSyncDefine::AudioQueueBufferCount];
     AudioQueueBufferRef outputBuffers[LAppMotionSyncDefine::AudioQueueBufferCount];
     OSStatus status;
-  
+
+    AVAudioSession* audioSession = [AVAudioSession sharedInstance];
+    BOOL success = [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord
+                                        mode:AVAudioSessionModeDefault
+                                     options:AVAudioSessionCategoryOptionAllowBluetooth
+                                       error:nil];
+    if (!success)
+    {
+        CubismLogError("[APP]Failed to AVAudioSession.setCategory() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        return false;
+    }
+
     csmUint32 blockAlign = channels * (bitDepth / 8);
     
     // オーディオ設定
@@ -57,7 +70,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(Csm::csmUint32 channels, Csm
     status = AudioQueueNewInput(&format, InputCallBack, this, NULL, NULL, 0, &_inputQueue);
     if (status != noErr)
     {
-        CubismLogError("[APP]Failed to AudioQueueNewInput() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to AudioQueueNewInput() in LAppMicrophoneAudioManager::SetupMicrophone()");
         return false;
     }
     
@@ -66,7 +79,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(Csm::csmUint32 channels, Csm
         status = AudioQueueAllocateBuffer(_inputQueue, _queueBufferSize, &inputBuffers[i]);
         if (status != noErr)
         {
-            CubismLogError("[APP]Failed to AudioQueueAllocateBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
+            LAppPal::PrintLogLn("[APP]Failed to AudioQueueAllocateBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
             return false;
         }
         
@@ -79,7 +92,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(Csm::csmUint32 channels, Csm
     status = AudioQueueNewOutput(&format, OutputCallBack, this, CFRunLoopGetCurrent(), kCFRunLoopCommonModes, 0, &_outputQueue);
     if (status != noErr)
     {
-        CubismLogError("[APP]Failed to AudioQueueNewOutput() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to AudioQueueNewOutput() in LAppMicrophoneAudioManager::SetupMicrophone()");
         return false;
     }
     
@@ -88,7 +101,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(Csm::csmUint32 channels, Csm
         status = AudioQueueAllocateBuffer(_outputQueue, _queueBufferSize, &outputBuffers[i]);
         if (status != noErr)
         {
-            CubismLogError("[APP]Failed to AudioQueueAllocateBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
+            LAppPal::PrintLogLn("[APP]Failed to AudioQueueAllocateBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
             return false;
         }
         
@@ -101,7 +114,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(Csm::csmUint32 channels, Csm
     status = AudioQueueStart(_inputQueue, NULL);
     if (status != noErr)
     {
-        CubismLogError("[APP]Failed to AudioQueueStart() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to AudioQueueStart() in LAppMicrophoneAudioManager::SetupMicrophone()");
         return false;
     }
     
@@ -109,7 +122,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(Csm::csmUint32 channels, Csm
     status = AudioQueueStart(_outputQueue, NULL);
     if (status != noErr)
     {
-        CubismLogError("[APP]Failed to AudioQueueStart() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to AudioQueueStart() in LAppMicrophoneAudioManager::SetupMicrophone()");
         return false;
     }
     
@@ -143,19 +156,61 @@ LAppMicrophoneAudioManager::~LAppMicrophoneAudioManager()
     Release();
 }
 
+void LAppMicrophoneAudioManager::WriteInputBuffer(csmFloat32* samples)
+{
+    _mutex.Lock();
+    
+    if (_inputQueue)
+    {
+        // マイク入力の内容を受け取る。
+        csmVector<csmFloat32> inputData;
+        for (csmUint32 i = 0; i < _queueBufferSampleCount * _channels; i++)
+        {
+            inputData.PushBack(samples[i]);
+        }
+        _inputDataList.AddValue(inputData);
+    }
+    
+    _mutex.Unlock();
+}
+
+void LAppMicrophoneAudioManager::ReadInputBuffer(csmFloat32* samples)
+{
+    _mutex.Lock();
+    
+    if (0 < _inputDataList.GetSize())
+    {
+        // 録音した音声を送る。
+        for (csmUint32 i = 0; i < _queueBufferSampleCount * _channels && i < _inputDataList[0].GetSize(); i++)
+        {
+            samples[i] = _inputDataList[0][i];
+            
+            // 解析に指定しているチャンネルのサンプルを送る。
+            if ((i % 2) == _useChannel)
+            {
+                _buffer.AddValue(samples[i]);
+            }
+        }
+        _inputDataList.Remove(1);
+    }
+    else
+    {
+        for (csmUint32 i = 0; i < _queueBufferSampleCount * _channels; i++)
+        {
+            samples[i] = 0.0f;
+        }
+    }
+    
+    _mutex.Unlock();
+}
+
 void LAppMicrophoneAudioManager::InputCallBack(void* customData, AudioQueueRef queue, AudioQueueBufferRef buffer, const AudioTimeStamp *startTime, UInt32 packetNum, const AudioStreamPacketDescription *packetDesc)
 {
     LAppMicrophoneAudioManager* data = reinterpret_cast<LAppMicrophoneAudioManager*>(customData);
     csmFloat32 *samples = reinterpret_cast<csmFloat32*>(buffer->mAudioData);
-    if (0 < packetNum && data->_inputQueue)
+    if (0 < packetNum)
     {
-        // マイク入力の内容を受け取る。
-        csmVector<csmFloat32> inputData;
-        for (csmUint32 i = 0; i < data->_queueBufferSampleCount * data->_channels; i ++)
-        {
-            inputData.PushBack(samples[i]);
-        }
-        data->_inputDataList.AddValue(inputData);
+        data->WriteInputBuffer(samples);
     }
     AudioQueueEnqueueBuffer(queue, buffer, 0, NULL);
 }
@@ -164,27 +219,8 @@ void LAppMicrophoneAudioManager::OutputCallBack(void* customData, AudioQueueRef 
 {
     LAppMicrophoneAudioManager* data = reinterpret_cast<LAppMicrophoneAudioManager*>(customData);
     csmFloat32 *samples = reinterpret_cast<csmFloat32*>(buffer->mAudioData);
-    if (0 < data->_inputDataList.GetSize())
-    {
-        // 録音した音声を送る。
-        for (csmUint32 i = 0; i < data->_queueBufferSampleCount * data->_channels && i < data->_inputDataList[0].GetSize(); i++)
-        {
-            samples[i] = data->_inputDataList[0][i];
-            
-            // 解析に指定しているチャンネルのサンプルを送る。
-            if ((i % 2) == data->_useChannel)
-            {
-                data->_buffer.AddValue(samples[i]);
-            }
-        }
-        data->_inputDataList.Remove(1);
-    }
-    else
-    {
-        for (csmUint32 i = 0; i < data->_queueBufferSampleCount * data->_channels; i ++)
-        {
-            samples[i] = 0.0f;
-        }
-    }
+
+    data->ReadInputBuffer(samples);
+    
     AudioQueueEnqueueBuffer(queue, buffer, 0, NULL);
 }

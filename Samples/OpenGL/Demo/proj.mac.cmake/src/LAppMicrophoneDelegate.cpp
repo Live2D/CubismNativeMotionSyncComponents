@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright(c) Live2D Inc. All rights reserved.
  *
  * Use of this source code is governed by the Live2D Open Software license
@@ -55,12 +55,12 @@ void LAppMicrophoneDelegate::ReleaseInstance()
 
 bool LAppMicrophoneDelegate::Initialize()
 {
-    LAppPal::PrintLog("START");
+    LAppPal::PrintLogLn("START");
 
     // GLFWの初期化
     if (glfwInit() == GL_FALSE)
     {
-        LAppPal::PrintLog("Can't initilize GLFW");
+        LAppPal::PrintLogLn("Can't initilize GLFW");
 
         return GL_FALSE;
     }
@@ -69,7 +69,7 @@ bool LAppMicrophoneDelegate::Initialize()
     _window = glfwCreateWindow(LAppDefine::RenderTargetWidth, LAppDefine::RenderTargetHeight, "SIMPLE_SAMPLE", NULL, NULL);
     if (_window == NULL)
     {
-        LAppPal::PrintLog("Can't create GLFW window.");
+        LAppPal::PrintLogLn("Can't create GLFW window.");
 
         glfwTerminate();
         return GL_FALSE;
@@ -81,7 +81,7 @@ bool LAppMicrophoneDelegate::Initialize()
 
     if (glewInit() != GLEW_OK)
    {
-        LAppPal::PrintLog("Can't initilize glew.");
+        LAppPal::PrintLogLn("Can't initilize glew.");
 
         glfwTerminate();
         return GL_FALSE;
@@ -228,7 +228,7 @@ LAppMicrophoneDelegate::~LAppMicrophoneDelegate()
 void LAppMicrophoneDelegate::InitializeCubism()
 {
     //setup cubism
-    _cubismOption.LogFunction = LAppPal::PrintMessage;
+    _cubismOption.LogFunction = LAppPal::PrintMessageLn;
     _cubismOption.LoggingLevel = Csm::CubismFramework::Option::LogLevel_Verbose;
     Csm::CubismFramework::StartUp(&_cubismAllocator, &_cubismOption);
 

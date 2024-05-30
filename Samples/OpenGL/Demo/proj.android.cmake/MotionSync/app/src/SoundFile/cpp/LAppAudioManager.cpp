@@ -8,6 +8,7 @@
 #include "LAppAudioManager.hpp"
 #include "LAppWavFileHandler.hpp"
 #include "../../main/cpp/JniBridgeC.hpp"
+#include "LAppPal.hpp"
 
 using namespace Csm;
 
@@ -15,6 +16,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
 {
     // 初期化
     Release();
+    _isLoadFile = true;
 
     // WAVファイルをロード
     LAppWavFileHandler wavHandler;
@@ -30,7 +32,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     _data = reinterpret_cast<csmByte*>(CSM_MALLOC(sizeof(csmByte) * _dataSize));
     if (!_data)
     {
-        CubismLogError("[APP]Failed malloc to '_data' in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed malloc to '_data' in LAppAudioManager::LoadFile()");
         return false;
     }
     for (csmUint32 i = 0; i < _dataSize; i++)
@@ -50,7 +52,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     _samples = reinterpret_cast<csmFloat32*>(CSM_MALLOC(sizeof(csmFloat32) * _samplesSize));
     if (!_samples)
     {
-        CubismLogError("[APP]Failed malloc to '_samples' in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed malloc to '_samples' in LAppAudioManager::LoadFile()");
         return false;
     }
     wavHandler.GetPcmDataChannel(_samples, useChannel);
@@ -66,10 +68,16 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
 
 csmBool LAppAudioManager::Update()
 {
+    if (!_isLoadFile)
+    {
+        // 早送りボタンが押されていないため音声の再生がない
+        return true;
+    }
+
     csmInt32 playPosition = JniBridgeC::GetAudioOutputBufferPosition(_audioId);
     if (playPosition < 0)
     {
-        CubismLogError("[APP]Failed to GetAudioOutputBufferPosition() in LAppAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to GetAudioOutputBufferPosition() in LAppAudioManager::Update()");
         return false;
     }
 
@@ -120,7 +128,8 @@ LAppAudioManager::LAppAudioManager() :
     _samples(NULL),
     _samplesSize(0),
     _samplesPos(0),
-    _buffer()
+    _buffer(),
+    _isLoadFile(false)
 {
 }
 

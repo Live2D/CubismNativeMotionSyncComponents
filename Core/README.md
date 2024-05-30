@@ -1,6 +1,8 @@
-# Live2D Cubism MotionSync Engine
+[English](README.md) / [日本語](README.ja.md)
 
-This folder contains header files and platform-specific library files for using the motion sync plug-in.
+# Live2D Cubism MotionSync Core
+
+This folder contains header files and platform-specific library files for developing native applications with using the motion sync.
 
 
 ## Library List

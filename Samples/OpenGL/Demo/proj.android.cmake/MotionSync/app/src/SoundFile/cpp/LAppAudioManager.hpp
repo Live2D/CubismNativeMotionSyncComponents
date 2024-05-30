@@ -74,4 +74,6 @@ private:
     Csm::csmUint32 _samplesPos;
     // MotionSyncで使用するバッファ
     Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32> _buffer;
+    // 音声ファイル読み込み済か
+    Csm::csmBool _isLoadFile;
 };

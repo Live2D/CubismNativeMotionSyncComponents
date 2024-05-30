@@ -7,6 +7,7 @@
 
 #import "LAppAudioManager.h"
 #import "LAppWavFileHandler.h"
+#import "LAppPal.h"
 
 using namespace Csm;
 
@@ -59,7 +60,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     
     if (status != noErr)
     {
-        CubismLogError("[APP]Failed to AudioQueueNewOutput() in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed to AudioQueueNewOutput() in LAppAudioManager::LoadFile()");
         return false;
     }
     
@@ -70,7 +71,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
                 
         if (status != noErr)
         {
-            CubismLogError("[APP]Failed to AudioQueueAllocateBuffer() in LAppAudioManager::LoadFile()");
+            LAppPal::PrintLogLn("[APP]Failed to AudioQueueAllocateBuffer() in LAppAudioManager::LoadFile()");
             return false;
         }
         
@@ -85,7 +86,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     
     if (status != noErr)
     {
-        CubismLogError("[APP]Failed to AudioQueueStart() in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed to AudioQueueStart() in LAppAudioManager::LoadFile()");
         return false;
     }
     

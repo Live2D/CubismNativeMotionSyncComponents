@@ -84,14 +84,14 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 | Development Tool | Version |
 | --- | --- |
-| Android Studio | Hedgehog 2023.1.1 |
-| CMake | 3.28.1 |
+| Android Studio | Jellyfish 2023.3.1 |
+| CMake | 3.29.3 |
 | Visual Studio 2013 | Update 5 |
 | Visual Studio 2015 | Update 3 |
-| Visual Studio 2017 | 15.9.59 |
-| Visual Studio 2019 | 16.11.33 |
-| Visual Studio 2022 | 17.8.4 |
-| Xcode | 15.1 |
+| Visual Studio 2017 | 15.9.62 |
+| Visual Studio 2019 | 16.11.34 |
+| Visual Studio 2022 | 17.9.7  |
+| Xcode | 15.4 |
 
 ### Android
 
@@ -106,17 +106,21 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 | Platform | Version |
 | --- | --- |
-| iOS / iPadOS | 16.6.1 |
-| macOS | 14.1.1 |
+| iOS / iPadOS | 17.5.1 |
+| macOS | 14.5 |
 | Windows 10 | 22H2 |
-| Windows 11 | 22H2 |
+| Windows 11 | 23H2 |
 
 ### Android
 
 | Version | Device | Tegra |
 | --- | --- | --- |
-| 13 | Pixel 7a | |
+| 14 | Pixel 7a | |
 | 7.1.1 | Nexus 9 | ✔︎ |
+
+### Cubism SDK for Native
+
+[Cubism 5 SDK for Native R1](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.1)
 
 
 ## Sound device
@@ -129,19 +133,19 @@ In this sample, the input sound is played directly through the device's sound pl
 
 ## Contribution to the project
 
-There are many ways to contribute to the project: logging bugs, submitting pull requests on this GitHub, and reporting issues and making suggestions in Live2D Community.
+There are many ways to contribute to the project: logging bugs, submitting pull requests on this GitHub, and reporting issues and making suggestions in Live2D Forum.
 
 ### Forking and Pull Requests
 
-We very much appreciate your pull requests, whether they bring fixes, improvements, or even new features. Note, however, that the wrapper is designed to be as lightweight and shallow as possible and should therefore only be subject to bug fixes and memory/performance improvements. To keep the main repository as clean as possible, please create a personal fork and feature branch as needed.
+We very much appreciate your pull requests, whether they bring fixes, improvements, or even new features. To keep the main repository as clean as possible, create a personal fork and feature branches there as needed.
 
 ### Bugs
 
-We are regularly checking bug reports and feature requests at Live2D Community. Before submitting a bug report, please search the Live2D Community to see if the bug report or feature request has already been submitted. Add your comment to the relevant issue if it already exists.
+We are regularly checking bug reports and feature requests at Live2D Forum. Before submitting a bug report, please search the Live2D Forum to see if the bug report or feature request has already been submitted. Add your comment to the relevant issue if it already exists.
 
 ### Suggestions
 
-We're also interested in your feedback for the future of the SDK. You can submit a suggestion or feature request at Live2D Community. To make this process more effective, we're asking that you include more information to help define them more clearly.
+We're also interested in your feedback for the future of the SDK. You can submit a suggestion or feature request at Live2D Forum. To make this process more effective, we're asking that you include more information to help define them more clearly.
 
 ## Coding Guidelines
 
@@ -159,5 +163,5 @@ Try to stick to the [Microsoft guidelines](https://msdn.microsoft.com/en-us/libr
 
 If you have any questions, please join the official Live2D forum and discuss with other users.
 
-- [Live2D Creator's Forum](https://community.live2d.com/)
+- [Live2D Creators Forum](https://community.live2d.com/)
 - [Live2D 公式クリエイターズフォーラム (Japanese)](https://creatorsforum.live2d.com/)

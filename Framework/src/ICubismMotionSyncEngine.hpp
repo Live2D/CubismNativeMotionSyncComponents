@@ -8,7 +8,7 @@
 #pragma once
 
 #include "CubismMotionSyncEngineVersion.hpp"
-#include "Lib/CubismMotionSyncEngineLib.hpp"
+#include "Lib/ICubismMotionSyncEngineLib.hpp"
 #include "Lib/CubismMotionSyncUtil.hpp"
 #include "Type/csmVector.hpp"
 

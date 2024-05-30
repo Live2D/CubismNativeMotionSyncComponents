@@ -8,6 +8,7 @@
 #include "LAppAudioManager.hpp"
 #include <dsound.h>
 #include "LAppWavFileHandler.hpp"
+#include "LAppPal.hpp"
 
 #pragma comment(lib, "dsound.lib")
 
@@ -27,7 +28,7 @@ csmBool LAppAudioManager::Init(HWND window, csmInt32 channels, csmInt32 samplesP
     result = CoInitialize(NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CoInitialize() in LAppAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to CoInitialize() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -35,7 +36,7 @@ csmBool LAppAudioManager::Init(HWND window, csmInt32 channels, csmInt32 samplesP
     result = DirectSoundCreate8(NULL, &_directSound, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to DirectSoundCreate8() in LAppAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to DirectSoundCreate8() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -43,7 +44,7 @@ csmBool LAppAudioManager::Init(HWND window, csmInt32 channels, csmInt32 samplesP
     result = _directSound->SetCooperativeLevel(window, DSSCL_EXCLUSIVE | DSSCL_PRIORITY);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetCooperativeLevel() in LAppAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to SetCooperativeLevel() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -58,7 +59,7 @@ csmBool LAppAudioManager::Init(HWND window, csmInt32 channels, csmInt32 samplesP
     result = _directSound->CreateSoundBuffer(&dsdesc, &_primary, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to CreateSoundBuffer() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -73,7 +74,7 @@ csmBool LAppAudioManager::Init(HWND window, csmInt32 channels, csmInt32 samplesP
     result = _primary->SetFormat(&waveFormat);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetFormat() in LAppAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to SetFormat() in LAppAudioManager::Init()");
         return false;
     }
 
@@ -104,6 +105,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
 {
     // 初期化
     Release();
+    _isLoadFile = true;
 
     HRESULT result;
     LPWAVEFORMATEX waveFormat;
@@ -117,7 +119,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     waveFormat = reinterpret_cast<LPWAVEFORMATEX>(CSM_MALLOC(sizeof(WAVEFORMATEX)));
     if (!waveFormat)
     {
-        CubismLogError("[APP]Failed malloc to 'waveFormat' in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed malloc to 'waveFormat' in LAppAudioManager::LoadFile()");
         return false;
     }
     waveFormat->wFormatTag = WAVE_FORMAT_PCM;
@@ -139,7 +141,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     _data = reinterpret_cast<csmByte*>(CSM_MALLOC(sizeof(csmByte) * _dataSize));
     if (!_data)
     {
-        CubismLogError("[APP]Failed malloc to '_data' in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed malloc to '_data' in LAppAudioManager::LoadFile()");
         CSM_FREE(waveFormat);
         return false;
     }
@@ -159,7 +161,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     result = _directSound->CreateSoundBuffer(&dsdesc, &_secondary, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed to CreateSoundBuffer() in LAppAudioManager::LoadFile()");
         CSM_FREE(waveFormat);
         return false;
     }
@@ -173,7 +175,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     result = _secondary->Lock(0, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, DSBLOCK_ENTIREBUFFER);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to Lock() in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::LoadFile()");
         return false;
     }
     for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -189,7 +191,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 
@@ -203,7 +205,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     _samples = reinterpret_cast<csmFloat32*>(CSM_MALLOC(sizeof(csmFloat32) * _samplesSize));
     if (!_samples)
     {
-        CubismLogError("[APP]Failed malloc to '_samples' in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed malloc to '_samples' in LAppAudioManager::LoadFile()");
         CSM_FREE(waveFormat);
         return false;
     }
@@ -217,7 +219,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     result = _secondary->SetCurrentPosition(0);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetCurrentPosition() in LAppAudioManager::LoadFile()");
+        LAppPal::PrintLogLn("[APP]Failed to SetCurrentPosition() in LAppAudioManager::LoadFile()");
     }
 
     return true;
@@ -231,16 +233,22 @@ csmBool LAppAudioManager::Update()
     DWORD soundBufferSize1, soundBufferSize2;
     csmUint32 bufferBytes = _bufferSampleBytes / 2;
 
+    if (!_isLoadFile)
+    {
+        // 早送りボタンが押されていないため音声の再生がない
+        return true;
+    }
+
     if (!_secondary)
     {
-        CubismLogError("[APP]_secondary is null in LAppAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]_secondary is null in LAppAudioManager::Update()");
         return false;
     }
 
     result = _secondary->GetCurrentPosition(&playCursor, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to GetCurrentPosition() in LAppAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to GetCurrentPosition() in LAppAudioManager::Update()");
         return false;
     }
 
@@ -252,7 +260,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Lock(0, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
         if (FAILED(result))
         {
-            CubismLogError("[APP]Failed to Lock() in LAppAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::Update()");
             return false;
         }
         for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -268,7 +276,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
         if (FAILED(result))
         {
-            CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
             return false;
         }
 
@@ -285,7 +293,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Lock(bufferBytes, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
         if (FAILED(result))
         {
-            CubismLogError("[APP]Failed to Lock() in LAppAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::Update()");
             return false;
         }
         for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -301,7 +309,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
         if (FAILED(result))
         {
-            CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
             return false;
         }
 
@@ -375,7 +383,8 @@ LAppAudioManager::LAppAudioManager() :
     _samples(NULL),
     _samplesSize(0),
     _samplesPos(0),
-    _buffer()
+    _buffer(),
+    _isLoadFile(false)
 {
 }
 

@@ -6,7 +6,7 @@
  */
 
 #include "CubismMotionSyncData.hpp"
-#include <CubismMotionSyncDataJson.hpp>
+#include "CubismMotionSyncDataJson.hpp"
 
  //--------- LIVE2D NAMESPACE ------------
 namespace Live2D { namespace Cubism { namespace Framework { namespace MotionSync {

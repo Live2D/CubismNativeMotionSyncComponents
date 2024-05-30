@@ -9,7 +9,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "CubismMotionSyncEngineLib.hpp"
+#include "ICubismMotionSyncEngineLib.hpp"
 #include "CubismMotionSyncEngineMappingInfo.hpp"
 
  //--------- LIVE2D NAMESPACE ------------

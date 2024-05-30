@@ -8,6 +8,7 @@
 #include "LAppMicrophoneAudioManager.hpp"
 #include <dsound.h>
 #include "LAppWavFileHandler.hpp"
+#include "LAppPal.hpp"
 
 #pragma comment(lib, "dsound.lib")
 
@@ -27,7 +28,7 @@ csmBool LAppMicrophoneAudioManager::Init(HWND window, csmInt32 channels, csmInt3
     result = CoInitialize(NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CoInitialize() in LAppMicrophoneAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to CoInitialize() in LAppMicrophoneAudioManager::Init()");
         return false;
     }
 
@@ -35,7 +36,7 @@ csmBool LAppMicrophoneAudioManager::Init(HWND window, csmInt32 channels, csmInt3
     result = DirectSoundCreate8(NULL, &_directSound, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to DirectSoundCreate8() in LAppMicrophoneAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to DirectSoundCreate8() in LAppMicrophoneAudioManager::Init()");
         return false;
     }
 
@@ -43,7 +44,7 @@ csmBool LAppMicrophoneAudioManager::Init(HWND window, csmInt32 channels, csmInt3
     result = _directSound->SetCooperativeLevel(window, DSSCL_EXCLUSIVE | DSSCL_PRIORITY);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetCooperativeLevel() in LAppMicrophoneAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to SetCooperativeLevel() in LAppMicrophoneAudioManager::Init()");
         return false;
     }
 
@@ -58,7 +59,7 @@ csmBool LAppMicrophoneAudioManager::Init(HWND window, csmInt32 channels, csmInt3
     result = _directSound->CreateSoundBuffer(&dsdesc, &_primary, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppMicrophoneAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to CreateSoundBuffer() in LAppMicrophoneAudioManager::Init()");
         return false;
     }
 
@@ -73,7 +74,7 @@ csmBool LAppMicrophoneAudioManager::Init(HWND window, csmInt32 channels, csmInt3
     result = _primary->SetFormat(&waveFormat);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetFormat() in LAppMicrophoneAudioManager::Init()");
+        LAppPal::PrintLogLn("[APP]Failed to SetFormat() in LAppMicrophoneAudioManager::Init()");
         return false;
     }
 
@@ -123,7 +124,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(csmUint32 channels, csmUint3
     result = DirectSoundCaptureCreate8(NULL, &_soundCapture, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to DirectSoundCaptureCreate8() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to DirectSoundCaptureCreate8() in LAppMicrophoneAudioManager::SetupMicrophone()");
         return false;
     }
 
@@ -153,7 +154,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(csmUint32 channels, csmUint3
     result = _soundCapture->CreateCaptureBuffer(&inputBufferSetting, &_captureBuffer, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CreateCaptureBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to CreateCaptureBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
         return false;
     }
 
@@ -162,7 +163,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(csmUint32 channels, csmUint3
     outputWaveFormat = reinterpret_cast<LPWAVEFORMATEX>(CSM_MALLOC(sizeof(WAVEFORMATEX)));
     if (!outputWaveFormat)
     {
-        CubismLogError("[APP]Failed malloc to 'waveFormat' in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed malloc to 'waveFormat' in LAppMicrophoneAudioManager::SetupMicrophone()");
         return false;
     }
     outputWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
@@ -184,7 +185,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(csmUint32 channels, csmUint3
     result = _directSound->CreateSoundBuffer(&outputBufferSetting, &_secondary, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to CreateSoundBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to CreateSoundBuffer() in LAppMicrophoneAudioManager::SetupMicrophone()");
         CSM_FREE(outputWaveFormat);
         return false;
     }
@@ -206,7 +207,7 @@ csmBool LAppMicrophoneAudioManager::SetupMicrophone(csmUint32 channels, csmUint3
     result = _secondary->SetCurrentPosition(_outputPos);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to SetCurrentPosition() in LAppAudioManager::SetupMicrophone()");
+        LAppPal::PrintLogLn("[APP]Failed to SetCurrentPosition() in LAppAudioManager::SetupMicrophone()");
     }
 
     return true;
@@ -223,7 +224,7 @@ csmBool LAppMicrophoneAudioManager::Update()
 
     if (!_captureBuffer)
     {
-        CubismLogError("[APP]_captureBuffer is null in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]_captureBuffer is null in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 
@@ -231,7 +232,7 @@ csmBool LAppMicrophoneAudioManager::Update()
     result = _captureBuffer->GetCurrentPosition(NULL, &inputReadPos);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to GetCurrentPosition() in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to GetCurrentPosition() in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 
@@ -251,7 +252,7 @@ csmBool LAppMicrophoneAudioManager::Update()
     result = _captureBuffer->Lock(_inputPos, inputSize, &inputSoundBuffer1, &inputSoundBufferSize1, &inputSoundBuffer2, &inputSoundBufferSize2, NULL);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to Lock() in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 
@@ -264,7 +265,7 @@ csmBool LAppMicrophoneAudioManager::Update()
 
     if (!_secondary)
     {
-        CubismLogError("[APP]_secondary is null in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]_secondary is null in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 
@@ -272,7 +273,7 @@ csmBool LAppMicrophoneAudioManager::Update()
     result = _secondary->Lock(_outputPos, inputSoundBufferSize1 + inputSoundBufferSize2, &outputSoundBuffer1, &outputSoundBufferSize1, &outputSoundBuffer2, &outputSoundBufferSize2, 0);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to Lock() in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 
@@ -290,7 +291,7 @@ csmBool LAppMicrophoneAudioManager::Update()
     result = _secondary->Unlock(outputSoundBuffer1, outputSoundBufferSize1, outputSoundBuffer2, outputSoundBufferSize2);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 
@@ -320,7 +321,7 @@ csmBool LAppMicrophoneAudioManager::Update()
     result = _captureBuffer->Unlock(inputSoundBuffer1, inputSoundBufferSize1, inputSoundBuffer2, inputSoundBufferSize2);
     if (FAILED(result))
     {
-        CubismLogError("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
         return false;
     }
 

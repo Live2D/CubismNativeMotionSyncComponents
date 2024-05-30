@@ -145,33 +145,33 @@ void CubismMotionSyncAudioBuffer<T>::Resize(csmUint32 bufferSize, csmBool useOut
 
         // 満タン状態かどうか判断するためにbuffer + 1の大きさで確保する
         _ringBuffer = static_cast<T*>(CSM_MALLOC(sizeof(T) * (_ringBufferSize)));
-        for (csmUint32 i = 0; i < _ringBufferSize; i++)
-        {
-            CSM_PLACEMENT_NEW(&_ringBuffer[i]) T();
-        }
-
+        
         // メモリ確保確認
         if (!_ringBuffer)
         {
             _ringBufferSize = 0;
             return;
         }
+        
+        for (csmUint32 i = 0; i < _ringBufferSize; i++)
+        {
+            CSM_PLACEMENT_NEW(&_ringBuffer[i]) T();
+        }
 
         if (useOutputBuffer)
         {
             // リングバッファで使用するバッファは必ず一つ空ける必要がある
             _outputBuffer = static_cast<T*>(CSM_MALLOC(sizeof(T) * _ringBufferSize - 1));
-            for (csmUint32 i = 0; i < _ringBufferSize - 1; i++)
-            {
-                CSM_PLACEMENT_NEW(&_outputBuffer[i]) T();
-            }
-
+            
             // メモリ確保確認
             if (!_outputBuffer)
             {
-                _ringBufferSize = 0;
                 Release();
-                _ringBuffer = NULL;
+            }
+            
+            for (csmUint32 i = 0; i < _ringBufferSize - 1; i++)
+            {
+                CSM_PLACEMENT_NEW(&_outputBuffer[i]) T();
             }
         }
     }
@@ -261,6 +261,7 @@ void CubismMotionSyncAudioBuffer<T>::Release()
             _outputBuffer[i].~T();
         }
         CSM_FREE(_outputBuffer);
+        _outputBuffer = NULL;
         _outputBufferSize = 0;
     }
     if (_ringBuffer)
@@ -270,7 +271,8 @@ void CubismMotionSyncAudioBuffer<T>::Release()
             _ringBuffer[i].~T();
         }
         CSM_FREE(_ringBuffer);
-        _ringBufferSize = 1;
+        _ringBuffer = NULL;
+        _ringBufferSize = 0;
         _begin = 0;
         _end = 0;
         _usingBufferSize = 0;

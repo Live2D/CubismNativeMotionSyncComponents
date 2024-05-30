@@ -24,7 +24,7 @@ namespace {
     {
         if (LAppDefine::DebugLogEnable)
         {
-            LAppPal::PrintLog("[APP]create buffer: %s ", path);
+            LAppPal::PrintLogLn("[APP]create buffer: %s ", path);
         }
         return LAppPal::LoadFileAsBytes(path, size);
     }
@@ -33,7 +33,7 @@ namespace {
     {
         if (DebugLogEnable)
         {
-            LAppPal::PrintLog("[APP]delete buffer: %s", path);
+            LAppPal::PrintLogLn("[APP]delete buffer: %s", path);
         }
         LAppPal::ReleaseBytes(buffer);
     }
@@ -67,7 +67,7 @@ void LAppMotionSyncMicrophoneModel::LoadAssets(const csmString fileName)
 
     if (_debugMode)
     {
-        LAppPal::PrintLog("[APP]load model setting: %s", fileName);
+        LAppPal::PrintLogLn("[APP]load model setting: %s", fileName);
     }
 
     csmSizeInt size;
@@ -81,7 +81,7 @@ void LAppMotionSyncMicrophoneModel::LoadAssets(const csmString fileName)
 
     if (_model == NULL)
     {
-        LAppPal::PrintLog("Failed to LoadAssets().");
+        LAppPal::PrintLogLn("Failed to LoadAssets().");
         return;
     }
 
@@ -141,7 +141,7 @@ void LAppMotionSyncMicrophoneModel::SetupModel()
 
         if (_debugMode)
         {
-            LAppPal::PrintLog("[APP]create model: %s", _modelSetting->GetModelFileName());
+            LAppPal::PrintLogLn("[APP]create model: %s", _modelSetting->GetModelFileName());
         }
 
         buffer = CreateBuffer(path.GetRawString(), &size);
@@ -151,7 +151,7 @@ void LAppMotionSyncMicrophoneModel::SetupModel()
 
     if (_modelSetting == NULL || _modelMatrix == NULL)
     {
-        LAppPal::PrintLog("Failed to SetupModel().");
+        LAppPal::PrintLogLn("Failed to SetupModel().");
         return;
     }
 
@@ -173,7 +173,7 @@ void LAppMotionSyncMicrophoneModel::SetupModel()
     {
         if (_debugMode)
         {
-            LAppPal::PrintLog("[APP]load motionSync setting: %s", fileName);
+            LAppPal::PrintLogLn("[APP]load motionSync setting: %s", fileName);
         }
 
         const csmString path = csmString(_modelHomeDir) + fileName;
@@ -183,7 +183,7 @@ void LAppMotionSyncMicrophoneModel::SetupModel()
 
         if (!_motionSync)
         {
-            LAppPal::PrintLog("Failed to SetupModel().");
+            LAppPal::PrintLogLn("Failed to SetupModel().");
             return;
         }
 

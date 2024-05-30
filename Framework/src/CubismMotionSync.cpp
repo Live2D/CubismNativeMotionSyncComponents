@@ -120,7 +120,7 @@ void CubismMotionSync::UpdateParameters(CubismModel *model, csmFloat32 deltaTime
         Analyze(model, processIndex);
 
         // Reset counter.
-        _processorInfoList[processIndex]._currentRemainTime = fmod(_processorInfoList[processIndex]._currentRemainTime, processorDeltaTime);
+        _processorInfoList[processIndex]._currentRemainTime = CubismMath::ModF(_processorInfoList[processIndex]._currentRemainTime, processorDeltaTime);
 
         for (csmUint32 targetIndex = 0; targetIndex < _data->GetSetting(processIndex).cubismParameterList.GetSize(); targetIndex++)
         {
@@ -156,14 +156,6 @@ void CubismMotionSync::SetSampleRate(csmUint32 processIndex, csmFloat32 sampleRa
     if (processIndex < _processorInfoList.GetSize())
     {
         _processorInfoList[processIndex]._sampleRate = sampleRate;
-    }
-}
-
-void CubismMotionSync::SetAudioLevelEffectRatio(csmUint32 processIndex, csmFloat32 audioLevelEffectRatio)
-{
-    if (processIndex < _processorInfoList.GetSize())
-    {
-        _processorInfoList[processIndex]._audioLevelEffectRatio = audioLevelEffectRatio;
     }
 }
 

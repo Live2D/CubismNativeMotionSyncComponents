@@ -75,6 +75,7 @@ struct MotionSyncAnalysisConfig_CRI
     Csm::csmInt32 Smoothing;
 
     /** Audio level effect ratio. */
+    /** Unused */
     Csm::csmFloat32 AudioLevelEffectRatio;
 };
 

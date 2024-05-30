@@ -12,6 +12,7 @@
 #import "CubismMotionSyncAudioBuffer.hpp"
 #import "Type/csmString.hpp"
 #import "Type/csmVector.hpp"
+#import "LAppMutex.h"
 
 class LAppMicrophoneAudioManager
 {
@@ -64,6 +65,22 @@ private:
     Csm::csmInt32 _channels;
     // MotionSyncで使用するバッファ
     Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32> _buffer;
+    // mutex
+    LAppMutex _mutex;
+    
+    /**
+     * @brief 録音データをバッファに格納する
+     *
+     * @param[in]   samples 録音データ
+     */
+    void WriteInputBuffer(Csm::csmFloat32* samples);
+    
+    /**
+     * @brief 録音データをバッファから取り出す
+     *
+     * @param[in]   samples 録音データの取り出し先
+     */
+    void ReadInputBuffer(Csm::csmFloat32* samples);
     
     /**
      * @brief 録音時のコールバック処理

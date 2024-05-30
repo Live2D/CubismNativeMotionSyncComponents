@@ -90,6 +90,7 @@ find_library(GLKIT_LIBRARY GLKit)
 find_library(OPENGLES_LIBRARY OpenGLES)
 find_library(QUARTZCORE_LIBRARY QuartzCore)
 find_library(UIKIT_LIBRARY UIKit)
+find_library(AVFOUNDATION_LIBRARY AVFoundation)
 find_library(AUDIOTOOLBOX_LIBRARY AudioToolBox)
 
 # Make executable app.
@@ -106,6 +107,7 @@ target_link_libraries(${APP_NAME}
   ${OPENGLES_LIBRARY}
   ${QUARTZCORE_LIBRARY}
   ${UIKIT_LIBRARY}
+  ${AVFOUNDATION_LIBRARY}
   ${AUDIOTOOLBOX_LIBRARY}
 )
 # Specify include directories.

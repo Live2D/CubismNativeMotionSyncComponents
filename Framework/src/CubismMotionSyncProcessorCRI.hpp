@@ -53,7 +53,7 @@ public:
      * @param samples               解析したい音声データ
      * @param blendRatio            ブレンド率(0.0f~1.0f)
      * @param smoothing             スムージングの値(1~100)
-     * @param audioLevelEffectRatio 音量の大きさが口の開閉に与える影響度(0.0~1.0)
+     * @param audioLevelEffectRatio 音量の大きさが口の開閉に与える影響度(0.0~1.0)  ※現在未使用。互換性のため残される
      *
      * @return 解析結果のインスタンス
      */

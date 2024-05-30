@@ -55,12 +55,12 @@ void LAppDelegate::ReleaseInstance()
 
 bool LAppDelegate::Initialize()
 {
-    LAppPal::PrintLog("START");
+    LAppPal::PrintLogLn("START");
 
     // GLFWの初期化
     if (glfwInit() == GL_FALSE)
     {
-        LAppPal::PrintLog("Can't initilize GLFW");
+        LAppPal::PrintLogLn("Can't initilize GLFW");
 
         return GL_FALSE;
     }
@@ -69,7 +69,7 @@ bool LAppDelegate::Initialize()
     _window = glfwCreateWindow(LAppDefine::RenderTargetWidth, LAppDefine::RenderTargetHeight, "SOUND_FILE_SAMPLE", NULL, NULL);
     if (_window == NULL)
     {
-        LAppPal::PrintLog("Can't create GLFW window.");
+        LAppPal::PrintLogLn("Can't create GLFW window.");
 
         glfwTerminate();
         return GL_FALSE;
@@ -80,7 +80,7 @@ bool LAppDelegate::Initialize()
     glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK) {
-        LAppPal::PrintLog("Can't initilize glew.");
+        LAppPal::PrintLogLn("Can't initilize glew.");
 
         glfwTerminate();
         return GL_FALSE;
@@ -373,7 +373,7 @@ bool LAppDelegate::CheckShader(GLuint shaderId)
     {
         GLchar* log = reinterpret_cast<GLchar*>(CSM_MALLOC(logLength));
         glGetShaderInfoLog(shaderId, logLength, &logLength, log);
-        CubismLogError("Shader compile log: %s", log);
+        LAppPal::PrintLogLn("Shader compile log: %s", log);
         CSM_FREE(log);
     }
 

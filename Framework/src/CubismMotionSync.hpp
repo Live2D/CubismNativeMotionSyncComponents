@@ -90,14 +90,6 @@ public:
      */
     void SetSampleRate(csmUint32 processIndex, csmFloat32 sampleRate);
 
-    /**
-     * @brief プロセッサのaudioLevelEffectRatioを設定
-     *
-     * @param[in]   processIndex インデックス
-     * @param[in]   audioLevelEffectRatio 設定する値
-     */
-    void SetAudioLevelEffectRatio(csmUint32 processIndex, csmFloat32 audioLevelEffectRatio);
-
 private:
     struct CubismProcessorInfo
     {

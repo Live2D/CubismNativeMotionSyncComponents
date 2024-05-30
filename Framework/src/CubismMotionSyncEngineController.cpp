@@ -5,12 +5,18 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
+ // Apple Privacy Manifestsの影響のため無効化
+#define USE_STAT_LIB 0
+
 #include "CubismMotionSyncEngineController.hpp"
+#if USE_STAT_LIB
 #include <sys/stat.h>
+#endif
 #include "CubismMotionSyncEngineVersion.hpp"
 #include "CubismMotionSyncEngineCri.hpp"
+#ifndef CSM_MOTIONSYNC_USE_STATIC_LIB
 #include "Lib/CubismMotionSyncEngineLib.hpp"
-#ifdef CSM_MOTIONSYNC_USE_STATIC_LIB
+#else
 #include "Lib/CubismMotionSyncEngineStaticLib.hpp"
 #endif
 
@@ -20,16 +26,18 @@ csmMap<EngineType, ICubismMotionSyncEngine*> CubismMotionSyncEngineController::_
 
 ICubismMotionSyncEngine* CubismMotionSyncEngineController::InstallEngine(csmString dllFilePath)
 {
-    struct stat statBuf;
-
 #ifndef CSM_MOTIONSYNC_USE_STATIC_LIB
     // 動的ライブラリの使用
+
+#if USE_STAT_LIB
+    struct stat statBuf;
 
     // 渡されたパスにファイルが存在するかチェック
     if (stat(dllFilePath.GetRawString(), &statBuf) != 0)
     {
         return NULL;
     }
+#endif
 
     ICubismMotionSyncEngineLib* engineHandle = CSM_NEW CubismMotionSyncEngineLib();
     if (!engineHandle->LoadLibrary(dllFilePath.GetRawString()))

@@ -17,6 +17,8 @@ if (CSM_MOTIONSYNC_MICROPHONE_DEMO)
       ${CMAKE_CURRENT_SOURCE_DIR}/LAppMotionSyncMicrophoneModel.hpp
       ${NATIVE_SRC_PATH}/LAppPal.cpp
       ${NATIVE_SRC_PATH}/LAppPal.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/LAppMutex.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/LAppMutex.hpp
       ${CMAKE_CURRENT_SOURCE_DIR}/LAppMicrophoneAudioManager.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/LAppMicrophoneAudioManager.hpp
       ${NATIVE_SRC_PATH}/LAppSprite.cpp

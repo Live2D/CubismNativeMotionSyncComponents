@@ -248,6 +248,7 @@ CubismMotionSync::CubismMotionSync(CubismModel* model, CubismMotionSyncData *dat
     {
         _processorInfoList.PushBack(CubismProcessorInfo(processorList[i], model, data->GetSetting(i)));
         _processorInfoList[i].Init(data->GetSetting(i));
+        CubismProcessorInfo::CreateAnalysisResult(&_processorInfoList[i]);
     }
 }
 
@@ -258,6 +259,7 @@ CubismMotionSync::~CubismMotionSync()
     {
         if (_processorInfoList[i]._processor)
         {
+            CubismProcessorInfo::DeleteAnalysisResult(&_processorInfoList[i]);
             _processorInfoList[i]._processor->Close();
         }
     }

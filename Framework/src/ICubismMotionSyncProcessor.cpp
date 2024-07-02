@@ -21,6 +21,14 @@ CubismMotionSyncEngineAnalysisResult* ICubismMotionSyncProcessor::CreateAnalysis
     return CSM_NEW CubismMotionSyncEngineAnalysisResult(_mappingInfoArray[0].GetModelParameterValues().GetSize());
 }
 
+void ICubismMotionSyncProcessor::DeleteAnalysisResult(CubismMotionSyncEngineAnalysisResult* analysisResult)
+{
+    if (analysisResult)
+    {
+        CSM_DELETE(analysisResult);
+    }
+}
+
 Framework::csmVector<CubismMotionSyncEngineMappingInfo> ICubismMotionSyncProcessor::GetMappingInfoArray()
 {
     return _mappingInfoArray;

@@ -26,6 +26,7 @@ void ICubismMotionSyncProcessor::DeleteAnalysisResult(CubismMotionSyncEngineAnal
     if (analysisResult)
     {
         CSM_DELETE(analysisResult);
+        analysisResult = NULL;
     }
 }
 

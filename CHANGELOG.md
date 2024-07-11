@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 * Implement support for `MSVC19.40` in the VS2022 build. by [@tatsuya-shiozawa](https://github.com/Live2D/CubismNativeMotionSyncComponents/pull/3)
+* Fix memory leak in `CubismMotionSyncEngineAnalysisResult` objects. by [@tatsuya-shiozawa](https://github.com/Live2D/CubismNativeMotionSyncComponents/pull/4)
 
 
 ## [5-r.1] - 2024-05-30

@@ -108,10 +108,10 @@ private:
             _audioLevelEffectRatio(0.0f),
             _samplesAudioBuff(NULL),
             _model(model),
+            _analysisResult(NULL),
             _currentRemainTime(0.0f)
         {
             Init(setting);
-            _analysisResult = _processor->CreateAnalysisResult();
         }
 
         /**
@@ -138,6 +138,28 @@ private:
             _blendRatio = setting.blendRatio;
             _smoothing = setting.smoothing;
             _sampleRate = setting.sampleRate;
+        }
+
+        /**
+         * @brief 解析結果を格納するクラスのインスタンスを生成する
+         *
+         * @param[in]   info    このクラスのインスタンス
+         * 
+         */
+        static void CreateAnalysisResult(CubismProcessorInfo* info)
+        {
+            info->_analysisResult = info->_processor->CreateAnalysisResult();
+        }
+
+        /**
+         * @brief 解析結果を格納するクラスのインスタンスを破棄する
+         *
+         * @param[in]   info    このクラスのインスタンス
+         *
+         */
+        static void DeleteAnalysisResult(CubismProcessorInfo* info)
+        {
+            info->_processor->DeleteAnalysisResult(info->_analysisResult);
         }
 
         ICubismMotionSyncProcessor *_processor;

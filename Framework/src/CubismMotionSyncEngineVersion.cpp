@@ -42,7 +42,7 @@ csmInt32 CubismMotionSyncEngineVersion::GetVersionNumber()
 csmString CubismMotionSyncEngineVersion::ToString()
 {
     csmChar buff[64];
-    sprintf(buff, "%02d.%02d.%04d (%d)", _major, _minor, _patch, _versionNumber);
+    snprintf(buff, sizeof(buff), "%02d.%02d.%04d (%d)", _major, _minor, _patch, _versionNumber);
     return  buff;
 }
 

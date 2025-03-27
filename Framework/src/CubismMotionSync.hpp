@@ -132,8 +132,14 @@ private:
             _currentRemainTime = 0.0f;
             for (csmUint32 i = 0; i < setting.cubismParameterList.GetSize(); i++)
             {
-                _lastSmoothedList.PushBack(_model->GetParameterValue(setting.cubismParameterList[i].parameterIndex));
-                _lastDampedList.PushBack(_model->GetParameterValue(setting.cubismParameterList[i].parameterIndex));
+                // パラメータが存在する場合は値を取得
+                // HACK: Listのインデックスを合わせるため、continueしない。
+                if (setting.cubismParameterList[i].parameterIndex >= 0)
+                {
+                    csmFloat32 parameterValue = _model->GetParameterValue(setting.cubismParameterList[i].parameterIndex);
+                    _lastSmoothedList.PushBack(parameterValue);
+                    _lastDampedList.PushBack(parameterValue);
+                }
             }
             _blendRatio = setting.blendRatio;
             _smoothing = setting.smoothing;

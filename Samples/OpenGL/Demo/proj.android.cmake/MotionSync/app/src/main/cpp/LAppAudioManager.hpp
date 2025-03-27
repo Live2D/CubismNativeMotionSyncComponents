@@ -26,6 +26,13 @@ public:
     Csm::csmBool LoadFile(Csm::csmString path, Csm::csmUint32 useChannel);
 
     /**
+     * @brief マイク入力の初期化
+     *
+     * @return マイク入力の初期化
+     */
+    Csm::csmBool SetupMicrophone(Csm::csmUint32 channels, Csm::csmUint32 samplesRate, Csm::csmUint32 bitDepth, Csm::csmUint32 useChannel);
+
+    /**
      * @brief 音声の更新
      *
      * @return 更新結果
@@ -38,6 +45,13 @@ public:
      * @return バッファ
      */
     Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32>* GetBuffer();
+
+    /**
+     * @brief 再生中か確認
+     *
+     * @return 再生中か
+     */
+    Csm::csmBool IsPlay();
 
     /**
      * @brief 解放処理
@@ -61,7 +75,24 @@ public:
     virtual ~LAppAudioManager();
 
 private:
-    Csm::csmInt32 _audioId;
+    /**
+     * @brief 音声ファイルによる音声の更新
+     *
+     * @return 更新結果
+     */
+    Csm::csmBool UpdateForAudioFile();
+
+    /**
+     * @brief マイクによる音声の更新
+     *
+     * @return 更新結果
+     */
+    Csm::csmBool UpdateForMicrophone();
+
+    // 録音用のID
+    Csm::csmInt32 _audioInputId;
+    // 再生用のID
+    Csm::csmInt32 _audioOutputId;
     // 正規化される前の音声データ
     Csm::csmByte* _data;
     // 正規化される前の音声データの大きさ
@@ -76,4 +107,10 @@ private:
     Csm::MotionSync::CubismMotionSyncAudioBuffer<Csm::csmFloat32> _buffer;
     // 音声ファイル読み込み済か
     Csm::csmBool _isLoadFile;
+    // 使用するチャンネル数
+    Csm::csmInt32 _channels;
+    // 使用するビット深度
+    Csm::csmInt32 _bitDepth;
+    // 使用するチャンネル
+    Csm::csmInt32 _useChannel;
 };

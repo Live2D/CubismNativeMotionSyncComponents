@@ -33,23 +33,28 @@ CubismMotionSyncData* CubismMotionSyncData::Create(CubismModel* model, const csm
         return NULL;
     }
 
-    // パーツIDを特定しておく
+    // パラメータIDを特定しておく
     for (csmUint32 i = 0; i < settingList.GetSize(); i++)
     {
         for (csmUint32 j = 0; j < settingList[i].cubismParameterList.GetSize(); j++)
         {
-            csmUint32 partIndex = model->GetParameterCount();
+            csmInt32 parameterIndex = -1;
 
-            for (csmUint32 k = 0; k < model->GetParameterCount(); k++)
+            for (csmInt32 k = 0; k < model->GetParameterCount(); k++)
             {
                 if (model->GetParameterId(k)->GetString() == settingList[i].cubismParameterList[j].id)
                 {
-                    partIndex = k;
+                    parameterIndex = k;
                     break;
                 }
             }
 
-            settingList[i].cubismParameterList[j].parameterIndex = partIndex;
+            settingList[i].cubismParameterList[j].parameterIndex = parameterIndex;
+
+            if (parameterIndex < 0)
+            {
+                CubismLogWarning("Parameter ID [%s] is not found in the model.", settingList[i].cubismParameterList[j].id.GetRawString());
+            }
         }
     }
 

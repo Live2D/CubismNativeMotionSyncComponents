@@ -27,7 +27,7 @@ struct CubismMotionSyncAnalysisResult
 {
     CubismMotionSyncAnalysisResult(
         Csm::csmFloat32* values = NULL
-        , Csm::csmInt32 valuesCount = NULL
+        , Csm::csmInt32 valuesCount = 0
         , Csm::csmUint32 processedSampleCount = 0)
         : Values(values),
         ValuesCount(valuesCount),

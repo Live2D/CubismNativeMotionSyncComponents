@@ -101,6 +101,119 @@ csmBool LAppAudioManager::Close()
     return true;
 }
 
+csmBool LAppAudioManager::SetupMicrophone(csmUint32 channels, csmUint32 samplesRate, Csm::csmUint32 bitDepth, csmUint32 useChannel)
+{
+    Release();
+    _isLoadFile = false;
+
+    HRESULT result;
+
+    _channels = channels;
+    _bitDepth = bitDepth;
+
+    // 口形に影響を与えたい音声のチャンネルを保存
+    if (useChannel < _channels)
+    {
+        _useChannel = useChannel;
+    }
+    else
+    {
+        _useChannel = _channels - 1;
+    }
+
+    // 録音用のバッファの作成
+    result = DirectSoundCaptureCreate8(NULL, &_soundCapture, NULL);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to DirectSoundCaptureCreate8() in LAppAudioManager::SetupMicrophone()");
+        return false;
+    }
+
+    // 録音用のフォーマットの設定
+    WAVEFORMATEX inputWaveFormat;
+    ZeroMemory(&inputWaveFormat, sizeof(WAVEFORMATEX));
+    inputWaveFormat.wFormatTag = WAVE_FORMAT_PCM;
+    inputWaveFormat.nChannels = _channels;
+    inputWaveFormat.nSamplesPerSec = samplesRate;
+    inputWaveFormat.wBitsPerSample = _bitDepth;
+    inputWaveFormat.nBlockAlign = (_channels * _bitDepth) / 8;
+    inputWaveFormat.nAvgBytesPerSec = samplesRate * inputWaveFormat.nBlockAlign;
+
+    // 確保するバッファサイズ
+    _bufferSampleBytes = LAppMotionSyncDefine::DirectSoundBufferSoundFileSampleCount * inputWaveFormat.nBlockAlign;
+
+    // リングバッファ確保
+    _buffer.Resize(LAppMotionSyncDefine::CsmRingBufferSize * inputWaveFormat.nBlockAlign);
+
+    // DirectSoundCaptureBufferオブジェクトの作成
+    DSCBUFFERDESC inputBufferSetting;
+    ZeroMemory(&inputBufferSetting, sizeof(DSCBUFFERDESC));
+    inputBufferSetting.dwSize = sizeof(DSCBUFFERDESC);
+    inputBufferSetting.dwBufferBytes = _bufferSampleBytes;
+    inputBufferSetting.lpwfxFormat = &inputWaveFormat;
+
+    result = _soundCapture->CreateCaptureBuffer(&inputBufferSetting, &_captureBuffer, NULL);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to CreateCaptureBuffer() in LAppAudioManager::SetupMicrophone()");
+        return false;
+    }
+
+    // 再生用のフォーマットの設定
+    LPWAVEFORMATEX outputWaveFormat;
+    outputWaveFormat = reinterpret_cast<LPWAVEFORMATEX>(CSM_MALLOC(sizeof(WAVEFORMATEX)));
+    if (!outputWaveFormat)
+    {
+        LAppPal::PrintLogLn("[APP]Failed malloc to 'waveFormat' in LAppAudioManager::SetupMicrophone()");
+        return false;
+    }
+    outputWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
+    outputWaveFormat->nChannels = _channels;
+    outputWaveFormat->nSamplesPerSec = samplesRate;
+    outputWaveFormat->nAvgBytesPerSec = samplesRate * inputWaveFormat.nBlockAlign;
+    outputWaveFormat->nBlockAlign = inputWaveFormat.nBlockAlign;
+    outputWaveFormat->wBitsPerSample = _bitDepth;
+    outputWaveFormat->cbSize = 0;
+
+    // サウンドバッファの作成
+    DSBUFFERDESC outputBufferSetting;
+    ZeroMemory(&outputBufferSetting, sizeof(DSBUFFERDESC));
+    outputBufferSetting.dwSize = sizeof(DSBUFFERDESC);
+    outputBufferSetting.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_STATIC | DSBCAPS_LOCDEFER;
+    outputBufferSetting.dwBufferBytes = _bufferSampleBytes;
+    outputBufferSetting.lpwfxFormat = outputWaveFormat;
+    outputBufferSetting.guid3DAlgorithm = DS3DALG_DEFAULT;
+    result = _directSound->CreateSoundBuffer(&outputBufferSetting, &_secondary, NULL);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to CreateSoundBuffer() in LAppAudioManager::SetupMicrophone()");
+        CSM_FREE(outputWaveFormat);
+        return false;
+    }
+
+    // ヘッダ用メモリを開放
+    CSM_FREE(outputWaveFormat);
+
+    // 録音開始
+    _captureBuffer->Start(DSCBSTART_LOOPING);
+
+    // 音声再生
+    _secondary->Play(0, 0, DSBPLAY_LOOPING);
+
+    // 録音時の読み込み位置
+    _inputPos = 0;
+
+    // 再生時の書き込み位置設定
+    _outputPos = 0;
+    result = _secondary->SetCurrentPosition(_outputPos);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to SetCurrentPosition() in LAppAudioManager::SetupMicrophone()");
+    }
+
+    return true;
+}
+
 csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
 {
     // 初期化
@@ -191,7 +304,7 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
     if (FAILED(result))
     {
-        LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppAudioManager::Update()");
         return false;
     }
 
@@ -225,7 +338,122 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     return true;
 }
 
-csmBool LAppAudioManager::Update()
+csmBool LAppAudioManager::UpdateForMicrophone()
+{
+    HRESULT result;
+
+    DWORD inputReadPos;
+    LONG inputSize;
+    LPVOID inputSoundBuffer1, inputSoundBuffer2;
+    DWORD inputSoundBufferSize1, inputSoundBufferSize2;
+
+    if (!_captureBuffer)
+    {
+        LAppPal::PrintLogLn("[APP]_captureBuffer is null in LAppAudioManager::UpdateForMicrophone()");
+        return false;
+    }
+
+    // 録音の書き込み位置取得
+    result = _captureBuffer->GetCurrentPosition(NULL, &inputReadPos);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to GetCurrentPosition() in LAppAudioManager::UpdateForMicrophone()");
+        return false;
+    }
+
+    inputSize = inputReadPos - _inputPos;
+    if (inputSize < 0)
+    {
+        // 負の値の場合一周しているためバッファの大きさを足す
+        inputSize += _bufferSampleBytes;
+    }
+    else if (inputSize == 0)
+    {
+        //　書き込まれていないため処理しない
+        return false;
+    }
+
+    // 録音側のロック
+    result = _captureBuffer->Lock(_inputPos, inputSize, &inputSoundBuffer1, &inputSoundBufferSize1, &inputSoundBuffer2, &inputSoundBufferSize2, NULL);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::UpdateForMicrophone()");
+        return false;
+    }
+
+    // 録音側の次回の読み取り位置を更新
+    _inputPos = (_inputPos + inputSoundBufferSize1 + inputSoundBufferSize2) % _bufferSampleBytes;
+
+    // 音声データをオーディオ側に書き込み
+    LPVOID outputSoundBuffer1, outputSoundBuffer2;
+    DWORD outputSoundBufferSize1, outputSoundBufferSize2;
+
+    if (!_secondary)
+    {
+        LAppPal::PrintLogLn("[APP]_secondary is null in LAppAudioManager::UpdateForMicrophone()");
+        return false;
+    }
+
+    // 再生側のロック
+    result = _secondary->Lock(_outputPos, inputSoundBufferSize1 + inputSoundBufferSize2, &outputSoundBuffer1, &outputSoundBufferSize1, &outputSoundBuffer2, &outputSoundBufferSize2, 0);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::UpdateForMicrophone()");
+        return false;
+    }
+
+    // 録音側のバッファを再生側のバッファに書き込み
+    for (DWORD i = 0; i < outputSoundBufferSize1 && i < inputSoundBufferSize1; i++)
+    {
+        reinterpret_cast<csmByte*>(outputSoundBuffer1)[i] = reinterpret_cast<csmByte*>(inputSoundBuffer1)[i];
+    }
+    for (DWORD i = 0; i < outputSoundBufferSize2 && i < inputSoundBufferSize2; i++)
+    {
+        reinterpret_cast<csmByte*>(outputSoundBuffer2)[i] = reinterpret_cast<csmByte*>(inputSoundBuffer2)[i];
+    }
+
+    // 再生側のロックの解除
+    result = _secondary->Unlock(outputSoundBuffer1, outputSoundBufferSize1, outputSoundBuffer2, outputSoundBufferSize2);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppAudioManager::UpdateForMicrophone()");
+        return false;
+    }
+
+    // リングバッファに正規化した値を格納
+    csmUint32 byte = _bitDepth / 8;
+    for (DWORD i = 0; i < inputSoundBufferSize1; i += byte)
+    {
+        // 指定したチャンネルのみ格納
+        if ((i / byte) % _channels == _useChannel)
+        {
+            _buffer.AddValue(LAppWavFileHandler::NormalizePcmSample(_bitDepth, &reinterpret_cast<csmByte*>(inputSoundBuffer1)[i], inputSoundBufferSize1 - i));
+        }
+    }
+    for (DWORD i = 0; i < inputSoundBufferSize2; i += byte)
+    {
+        // 指定したチャンネルのみ格納
+        if ((i / byte) % _channels == _useChannel)
+        {
+            _buffer.AddValue(LAppWavFileHandler::NormalizePcmSample(_bitDepth, &reinterpret_cast<csmByte*>(inputSoundBuffer2)[i], inputSoundBufferSize2 - i));
+        }
+    }
+
+    // 再生側の次の書き込み位置を決める
+    _outputPos = (_outputPos + inputSoundBufferSize1 + inputSoundBufferSize2) % _bufferSampleBytes;
+
+    // 録音側のロックの解除
+    result = _captureBuffer->Unlock(inputSoundBuffer1, inputSoundBufferSize1, inputSoundBuffer2, inputSoundBufferSize2);
+    if (FAILED(result))
+    {
+        LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppAudioManager::UpdateForMicrophone()");
+        return false;
+    }
+
+    return true;
+}
+
+csmBool LAppAudioManager::UpdateForAudioFile()
 {
     HRESULT result;
     DWORD playCursor;
@@ -241,14 +469,14 @@ csmBool LAppAudioManager::Update()
 
     if (!_secondary)
     {
-        LAppPal::PrintLogLn("[APP]_secondary is null in LAppAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]_secondary is null in LAppAudioManager::UpdateForAudioFile()");
         return false;
     }
 
     result = _secondary->GetCurrentPosition(&playCursor, NULL);
     if (FAILED(result))
     {
-        LAppPal::PrintLogLn("[APP]Failed to GetCurrentPosition() in LAppAudioManager::Update()");
+        LAppPal::PrintLogLn("[APP]Failed to GetCurrentPosition() in LAppAudioManager::UpdateForAudioFile()");
         return false;
     }
 
@@ -260,7 +488,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Lock(0, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
         if (FAILED(result))
         {
-            LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::UpdateForAudioFile()");
             return false;
         }
         for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -276,7 +504,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
         if (FAILED(result))
         {
-            LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppAudioManager::UpdateForAudioFile()");
             return false;
         }
 
@@ -293,7 +521,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Lock(bufferBytes, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
         if (FAILED(result))
         {
-            LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Lock() in LAppAudioManager::UpdateForAudioFile()");
             return false;
         }
         for (DWORD i = 0; i < soundBufferSize1 && _dataPos < _dataSize; i++)
@@ -309,7 +537,7 @@ csmBool LAppAudioManager::Update()
         result = _secondary->Unlock(soundBuffer1, soundBufferSize1, soundBuffer2, soundBufferSize2);
         if (FAILED(result))
         {
-            LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppMicrophoneAudioManager::Update()");
+            LAppPal::PrintLogLn("[APP]Failed to Unlock() in LAppAudioManager::UpdateForAudioFile()");
             return false;
         }
 
@@ -341,6 +569,19 @@ csmBool LAppAudioManager::Update()
     return true;
 }
 
+csmBool LAppAudioManager::Update()
+{
+    if (_isLoadFile)
+    {
+        return UpdateForAudioFile();
+    }
+    else
+    {
+        return UpdateForMicrophone();
+    }
+    return true;
+}
+
 MotionSync::CubismMotionSyncAudioBuffer<csmFloat32>* LAppAudioManager::GetBuffer()
 {
     return &_buffer;
@@ -348,13 +589,28 @@ MotionSync::CubismMotionSyncAudioBuffer<csmFloat32>* LAppAudioManager::GetBuffer
 
 csmBool LAppAudioManager::IsPlay()
 {
-    DWORD status;
-    _secondary->GetStatus(&status);
-    return status & DSBSTATUS_PLAYING;
+    if (_secondary)
+    {
+        DWORD status;
+        _secondary->GetStatus(&status);
+        return status & DSBSTATUS_PLAYING;
+    }
+    return false;
 }
 
 void LAppAudioManager::Release()
 {
+    // 録音部分の解放
+    if (_captureBuffer)
+    {
+        _captureBuffer->Release();
+        _captureBuffer = NULL;
+    }
+    if (_soundCapture)
+    {
+        _soundCapture->Release();
+        _soundCapture = NULL;
+    }
     if (_secondary)
     {
         _secondary->Stop();
@@ -374,6 +630,8 @@ void LAppAudioManager::Release()
 }
 
 LAppAudioManager::LAppAudioManager() :
+    _soundCapture(NULL),
+    _captureBuffer(NULL),
     _secondary(NULL),
     _channels(1),
     _bitDepth(8),
@@ -384,7 +642,11 @@ LAppAudioManager::LAppAudioManager() :
     _samplesSize(0),
     _samplesPos(0),
     _buffer(),
-    _isLoadFile(false)
+    _isLoadFile(false),
+    _bufferSampleBytes(0),
+    _useChannel(0),
+    _inputPos(0),
+    _outputPos(0)
 {
 }
 

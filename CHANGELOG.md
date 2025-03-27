@@ -5,12 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
+## [5-r.2] - 2025-03-27
+
+### Changed
+
+* Microphone input processing has been separated and made into an interface that provides a voice buffer to support other inputs.
+* Audio file input and microphone input samples have been integrated.
+* Change specify the NDK version of the Android sample.
+* Change a warning when parameters listed in `.motionsync3.json` do not exist in the model.
+* Change to read shader source codes from files.
+* Change the compile and target SDK version of Android OS to 15.0 (API 35).
+  * Upgrade the version of Android Gradle Plugin from 8.1.1 to 8.6.1.
+  * Upgrade the version of Gradle from 8.2 to 8.7.
+  * Upgrade the version of NDK from 25.2.9519653 to 26.3.11579264.
+  * Change the minimum version of Android Studio to Ladybug(2024.2.1 Patch 2).
+* Change the minimum support version of Java to 8.
 
 ### Fixed
 
 * Implement support for `MSVC19.40` in the VS2022 build. by [@tatsuya-shiozawa](https://github.com/Live2D/CubismNativeMotionSyncComponents/pull/3)
 * Fix memory leak in `CubismMotionSyncEngineAnalysisResult` objects. by [@tatsuya-shiozawa](https://github.com/Live2D/CubismNativeMotionSyncComponents/pull/4)
+* Fix an issue where `Meta` information could not be correctly parsed from `.motionsync3.json`.
+* Fix an issue on Windows where an error would occur if the model name contained certain characters.
+* Fix an issue where some variable names in `CubismMotionSyncData::Create()` were incorrect.
+* Fix warnings for `-Wnull-conversion` and `-Wdeprecated-declarations`.
+
+### Removed
+
+* Remove armeabi-v7a from architecture support.
+* Remove Visual Studio 2013 samples.
 
 
 ## [5-r.1] - 2024-05-30
@@ -71,5 +94,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * New released!
 
 
-[5-r.1]: https://github.com/Live2D/CubismNativeMotionSyncComponentsDev/compare/5-r.1-beta.2...5-r.1
-[5-r.1-beta.2]: https://github.com/Live2D/CubismNativeMotionSyncComponentsDev/compare/5-r.1-beta.1...5-r.1-beta.2
+[5-r.2]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1...5-r.2
+[5-r.1]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1-beta.2...5-r.1
+[5-r.1-beta.2]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1-beta.1...5-r.1-beta.2

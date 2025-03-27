@@ -92,21 +92,20 @@ Demo
 
 | 開発ツール | バージョン |
 | --- | --- |
-| Android Studio | Jellyfish 2023.3.1 |
-| CMake | 3.29.3 |
-| Visual Studio 2013 | Update 5 |
+| Android Studio | Meerkat 2024.3.1 |
+| CMake | 3.31.6 |
 | Visual Studio 2015 | Update 3 |
 | Visual Studio 2017 | 15.9.62 |
-| Visual Studio 2019 | 16.11.34 |
-| Visual Studio 2022 | 17.9.7 |
-| Xcode | 15.4 |
+| Visual Studio 2019 | 16.11.45 |
+| Visual Studio 2022 | 17.13.3 |
+| Xcode | 16.2 |
 
 ### Android
 
 | Android SDK tools | バージョン |
 | --- | --- |
-| Android NDK | 26.2.11394342 |
-| Android SDK | 34.0.0 |
+| Android NDK | 26.3.11579264 |
+| Android SDK | 35.0.2 |
 | CMake | 3.22.1 |
 
 
@@ -114,21 +113,21 @@ Demo
 
 | プラットフォーム | バージョン |
 | --- | --- |
-| iOS / iPadOS | 17.5.1 |
-| macOS | 14.5 |
+| iOS / iPadOS | 18.3.2 |
+| macOS | 18.3.1 |
 | Windows 10 | 22H2 |
-| Windows 11 | 23H2 |
+| Windows 11 | 24H2 |
 
 ### Android
 
 | バージョン | デバイス | Tegra |
 | --- | --- | --- |
-| 14 | Pixel 7a | |
+| 15 | Pixel 7a, Xperia 10 V | |
 | 7.1.1 | Nexus 9 | ✔︎ |
 
 ### Cubism SDK for Native
 
-[Cubism 5 SDK for Native R1](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.1)
+[Cubism 5 SDK for Native R3](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.3)
 
 
 ## サウンドデバイス

@@ -117,6 +117,10 @@ void LAppMotionSyncModel::Update()
     if (_isMotionSync)
     {
         _soundData.Update();
+        if (!_soundData.IsPlay()) 
+        {
+            PlayMicrophone();
+        }
     }
 
     // モデルのパラメータを更新
@@ -202,6 +206,7 @@ void LAppMotionSyncModel::SetupModel()
         // 音声データ
         _soundFileList = _modelSetting->GetMotionSyncSoundFileList();
         _soundIndex = _soundFileList.GetSize() - 1;
+        PlayMicrophone();
         _isMotionSync = true;
     }
 }
@@ -255,6 +260,12 @@ void LAppMotionSyncModel::PlayIndexSound()
         _soundData.LoadFile(_modelHomeDir + _soundFileList[_soundIndex], 0);
         _motionSync->SetSoundBuffer(0, _soundData.GetBuffer());
     }
+}
+
+void LAppMotionSyncModel::PlayMicrophone()
+{
+    _soundData.SetupMicrophone(Channels, SamplesPerSec, BitDepth, 0);
+    _motionSync->SetSoundBuffer(0, _soundData.GetBuffer());
 }
 
 void LAppMotionSyncModel::Draw(Csm::CubismMatrix44& matrix)

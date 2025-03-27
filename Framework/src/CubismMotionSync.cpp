@@ -106,7 +106,8 @@ void CubismMotionSync::UpdateParameters(CubismModel *model, csmFloat32 deltaTime
         {
             for (csmUint32 targetIndex = 0; targetIndex < _data->GetSetting(processIndex).cubismParameterList.GetSize(); targetIndex++)
             {
-                if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex]))
+                if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex])
+                    || _data->GetSetting(processIndex).cubismParameterList[targetIndex].parameterIndex < 0)
                 {
                     continue;
                 }
@@ -124,7 +125,8 @@ void CubismMotionSync::UpdateParameters(CubismModel *model, csmFloat32 deltaTime
 
         for (csmUint32 targetIndex = 0; targetIndex < _data->GetSetting(processIndex).cubismParameterList.GetSize(); targetIndex++)
         {
-            if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex]))
+            if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex])
+                || _data->GetSetting(processIndex).cubismParameterList[targetIndex].parameterIndex < 0)
             {
                 continue;
             }

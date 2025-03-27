@@ -88,6 +88,11 @@ private:
     void PlayIndexSound();
 
     /**
+     * @brief マイク入力を開始する
+     */
+    void PlayMicrophone();
+
+    /**
      * @brief モデルを描画する処理。モデルを描画する空間のView-Projection行列を渡す
      *
      * @param[in]  matrix  View-Projection行列

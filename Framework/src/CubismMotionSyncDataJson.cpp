@@ -62,8 +62,8 @@ CubismMotionSyncDataMeta CubismMotionSyncDataJson::GetMeta() const
     for (csmInt32 i = 0; i < meta.settingCount; i++)
     {
         CubismMotionSyncDataMetaDictionary dictionary;
-        dictionary.id = _json->GetRoot()[Meta][Dictionary][i].GetString();
-        dictionary.name = _json->GetRoot()[Meta][Dictionary][i].GetString();
+        dictionary.id = _json->GetRoot()[Meta][Dictionary][i][Id].GetString();
+        dictionary.name = _json->GetRoot()[Meta][Dictionary][i][Name].GetString();
         meta.dictionary.PushBack(dictionary);
     }
 

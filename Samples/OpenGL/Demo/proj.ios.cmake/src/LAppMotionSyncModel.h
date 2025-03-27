@@ -52,14 +52,6 @@ public:
     void ChangeNextIndexSound();
 
 private:
-    Csm::MotionSync::CubismModelMotionSyncSettingJson* _modelSetting; ///< モデルセッティング情報
-    Csm::csmString _modelHomeDir; ///< モデルセッティングが置かれたディレクトリ
-    Csm::csmFloat32 _userTimeSeconds; ///< デルタ時間の積算値[秒]
-    Csm::MotionSync::CubismMotionSync* _motionSync; ///< モーションシンク
-    LAppAudioManager _soundData; ///< モーションシンクで使用する音声データ
-    Csm::csmVector<Csm::csmString> _soundFileList; ///< 音声データファイルのリスト
-    Csm::csmInt32 _soundIndex; ///< 再生する音声データのインデックス値
-
     /**
      * @brief model3.jsonからモデルを生成する。<br>
      *         model3.jsonの記述に従ってモデル生成、モーション、物理演算などのコンポーネント生成を行う。
@@ -87,9 +79,23 @@ private:
     void PlayIndexSound();
 
     /**
+     * @brief マイク入力を開始する
+     *
+     */
+    void PlayMicrophone();
+
+    /**
      * @brief モデルを描画する処理。モデルを描画する空間のView-Projection行列を渡す
      *
      * @param[in]  matrix  View-Projection行列
      */
     void Draw(Csm::CubismMatrix44& matrix);
+
+    Csm::MotionSync::CubismModelMotionSyncSettingJson* _modelSetting; ///< モデルセッティング情報
+    Csm::csmString _modelHomeDir; ///< モデルセッティングが置かれたディレクトリ
+    Csm::csmFloat32 _userTimeSeconds; ///< デルタ時間の積算値[秒]
+    Csm::MotionSync::CubismMotionSync* _motionSync; ///< モーションシンク
+    LAppAudioManager _soundData; ///< モーションシンクで使用する音声データ
+    Csm::csmVector<Csm::csmString> _soundFileList; ///< 音声データファイルのリスト
+    Csm::csmInt32 _soundIndex; ///< 再生する音声データのインデックス値
 };

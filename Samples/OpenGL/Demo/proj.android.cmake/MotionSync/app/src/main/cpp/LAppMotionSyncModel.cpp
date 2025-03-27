@@ -5,10 +5,11 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-#include "LAppMotionSyncMicrophoneModel.hpp"
+#include "LAppMotionSyncModel.hpp"
+#include "JniBridgeC.hpp"
 #include "CubismModelMotionSyncSettingJson.hpp"
 #include "LAppDefine.hpp"
-#include "LAppMicrophoneDelegate.hpp"
+#include "LAppDelegate.hpp"
 #include "LAppMotionSyncDefine.hpp"
 #include "LAppPal.hpp"
 #include "LAppTextureManager.hpp"
@@ -39,15 +40,16 @@ namespace {
     }
 }
 
-LAppMotionSyncMicrophoneModel::LAppMotionSyncMicrophoneModel()
+LAppMotionSyncModel::LAppMotionSyncModel()
     : CubismUserModel()
     , _modelSetting(NULL)
     , _motionSync(NULL)
+    , _soundIndex(0)
     , _isMotionSync(false)
 {
 }
 
-LAppMotionSyncMicrophoneModel::~LAppMotionSyncMicrophoneModel()
+LAppMotionSyncModel::~LAppMotionSyncModel()
 {
     if (_modelSetting)
     {
@@ -61,13 +63,13 @@ LAppMotionSyncMicrophoneModel::~LAppMotionSyncMicrophoneModel()
     }
 }
 
-void LAppMotionSyncMicrophoneModel::LoadAssets(const csmString fileName)
+void LAppMotionSyncModel::LoadAssets(const csmString fileName)
 {
-    _modelHomeDir = csmString(ResourcesPath) + "/" + fileName + "/";
+    _modelHomeDir = csmString(ResourcesPath) + fileName + "/";
 
     if (_debugMode)
     {
-        LAppPal::PrintLogLn("[APP]load model setting: %s", fileName);
+        LAppPal::PrintLogLn("[APP]load model setting: %s", fileName.GetRawString());
     }
 
     csmSizeInt size;
@@ -91,11 +93,11 @@ void LAppMotionSyncMicrophoneModel::LoadAssets(const csmString fileName)
     SetupTextures();
 }
 
-void LAppMotionSyncMicrophoneModel::Update()
+void LAppMotionSyncModel::Update()
 {
-    int width, height;
     // ウィンドウサイズを取得
-    glfwGetWindowSize(LAppMicrophoneDelegate::GetInstance()->GetWindow(), &width, &height);
+    int width = LAppDelegate::GetInstance()->GetWindowWidth();
+    int height = LAppDelegate::GetInstance()->GetWindowHeight();
 
     Csm::CubismMatrix44 projection;
     // 念のため単位行列に初期化
@@ -115,6 +117,12 @@ void LAppMotionSyncMicrophoneModel::Update()
     // 音声データ更新
     if (_isMotionSync)
     {
+        // 再生が終了していたらマイク入力に切り替える
+        if (!_soundData.IsPlay())
+        {
+            PlayMicrophone();
+        }
+
         _soundData.Update();
     }
 
@@ -125,7 +133,16 @@ void LAppMotionSyncMicrophoneModel::Update()
     Draw(projection); ///< 参照渡しなのでprojectionは変質する
 }
 
-void LAppMotionSyncMicrophoneModel::SetupModel()
+void LAppMotionSyncModel::ChangeNextIndexSound()
+{
+    if (0 < _soundFileList.GetSize())
+    {
+        _soundIndex = (_soundIndex + 1) % _soundFileList.GetSize();
+        PlayIndexSound();
+    }
+}
+
+void LAppMotionSyncModel::SetupModel()
 {
     _updating = true;
     _initialized = false;
@@ -179,7 +196,7 @@ void LAppMotionSyncMicrophoneModel::SetupModel()
         const csmString path = csmString(_modelHomeDir) + fileName;
         buffer = CreateBuffer(path.GetRawString(), &size);
 
-        _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec);
+        _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec, JniBridgeC::GetJniLibPath() + "/");
 
         if (!_motionSync)
         {
@@ -190,13 +207,16 @@ void LAppMotionSyncMicrophoneModel::SetupModel()
         DeleteBuffer(buffer, path.GetRawString());
 
         // 音声データ
-        _soundData.SetupMicrophone(Channels, SamplesPerSec, BitDepth, 0);
-        _motionSync->SetSoundBuffer(0, _soundData.GetBuffer());
+        _soundFileList = _modelSetting->GetMotionSyncSoundFileList();
+        _soundIndex = _soundFileList.GetSize() - 1;
         _isMotionSync = true;
+
+        // 最初は音声ファイルを再生しないためマイク入力で始める
+        PlayMicrophone();
     }
 }
 
-void LAppMotionSyncMicrophoneModel::SetupTextures()
+void LAppMotionSyncModel::SetupTextures()
 {
     for (csmInt32 modelTextureNumber = 0; modelTextureNumber < _modelSetting->GetTextureCount(); modelTextureNumber++)
     {
@@ -210,7 +230,7 @@ void LAppMotionSyncMicrophoneModel::SetupTextures()
         csmString texturePath = _modelSetting->GetTextureFileName(modelTextureNumber);
         texturePath = _modelHomeDir + texturePath;
 
-        LAppTextureManager::TextureInfo* texture = LAppMicrophoneDelegate::GetInstance()->GetTextureManager()->CreateTextureFromPngFile(texturePath.GetRawString());
+        LAppTextureManager::TextureInfo* texture = LAppDelegate::GetInstance()->GetTextureManager()->CreateTextureFromPngFile(texturePath.GetRawString());
         const csmInt32 glTextueNumber = texture->id;
 
         // OpenGL
@@ -221,24 +241,37 @@ void LAppMotionSyncMicrophoneModel::SetupTextures()
     GetRenderer<Rendering::CubismRenderer_OpenGLES2>()->IsPremultipliedAlpha(false);
 }
 
-void LAppMotionSyncMicrophoneModel::UpdateModelParam()
-{
-        const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
-        _userTimeSeconds += deltaTimeSeconds;
-    
-        // 不透明度
-        _opacity = _model->GetModelOpacity();
-    
-        // モーションシンクプラグイン
-        if (_motionSync != NULL)
-        {
-            _motionSync->UpdateParameters(_model, deltaTimeSeconds);
-        }
-    
-        _model->Update();
+void LAppMotionSyncModel::UpdateModelParam() {
+    const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
+    _userTimeSeconds += deltaTimeSeconds;
+
+    // 不透明度
+    _opacity = _model->GetModelOpacity();
+
+    // モーションシンクプラグイン
+    if (_motionSync != NULL) {
+        _motionSync->UpdateParameters(_model, deltaTimeSeconds);
+    }
+
+    _model->Update();
 }
 
-void LAppMotionSyncMicrophoneModel::Draw(Csm::CubismMatrix44& matrix)
+void LAppMotionSyncModel::PlayIndexSound()
+{
+    if (_soundIndex < _soundFileList.GetSize())
+    {
+        _soundData.LoadFile(_modelHomeDir + _soundFileList[_soundIndex], 0);
+        _motionSync->SetSoundBuffer(0, _soundData.GetBuffer());
+    }
+}
+
+void LAppMotionSyncModel::PlayMicrophone()
+{
+    _soundData.SetupMicrophone(Channels, SamplesPerSec, BitDepth, 0);
+    _motionSync->SetSoundBuffer(0, _soundData.GetBuffer());
+}
+
+void LAppMotionSyncModel::Draw(Csm::CubismMatrix44& matrix)
 {
     if (!_model)
     {

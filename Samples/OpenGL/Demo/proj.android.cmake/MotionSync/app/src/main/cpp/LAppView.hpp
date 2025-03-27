@@ -13,6 +13,7 @@
 #include <Math/CubismViewMatrix.hpp>
 #include "CubismFramework.hpp"
 #include <Rendering/OpenGL/CubismOffscreenSurface_OpenGLES2.hpp>
+#include "LAppSpriteShader.hpp"
 
 class LAppSprite;
 class LAppMotionSyncModel;
@@ -44,11 +45,6 @@ public:
     void Render();
 
     /**
-    * @brief シェーダーの初期化を行う。
-    */
-    void InitializeShader();
-
-    /**
     * @brief 画像の初期化を行う。
     */
     void InitializeSprite();
@@ -78,16 +74,18 @@ public:
     void OnTouchesEnded(float pointX, float pointY);
 
 private:
-    GLuint _programId; ///< シェーダID
-
     LAppSprite* _back; ///< 背景画像
+    LAppSprite* _fastForward; ///< 早送り画像
     LAppSprite* _gear; ///< ギア画像
     LAppSprite* _power; ///< 電源画像
     LAppMotionSyncModel* _userModel; ///< ユーザーが実際に使用するモデル
 
     Csm::csmVector<Csm::csmString> _modelNameList; ///< モデルディレクトリ名のリスト
     Csm::csmInt32 _modelIndex; ///< 表示するシーンモデル名のインデックス値
+    Csm::csmBool _changeSound; ///< 音声切り替えフラグ
     Csm::csmBool _changeModel; ///< モデル切り替えフラグ
+
+    LAppSpriteShader* _spriteShader;             ///< シェーダー作成委譲クラス
 
     /**
      * @brief モデル名リストの読み込み

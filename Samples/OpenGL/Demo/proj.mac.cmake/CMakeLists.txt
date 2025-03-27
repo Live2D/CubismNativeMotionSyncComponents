@@ -25,6 +25,7 @@ set(STB_PATH ${THIRD_PARTY_PATH}/stb)
 set(GLEW_PATH ${THIRD_PARTY_PATH}/glew)
 set(GLFW_PATH ${THIRD_PARTY_PATH}/glfw)
 set(RES_PATH ${SDK_ROOT_PATH}/Samples/Resources)
+set(SAMPLE_SHADER_PATH ${NATIVE_PATH}/Samples/OpenGL/Shaders/Standard)
 set(MOTIONSYNC_CORE_DIR MotionSyncCore)
 set(MOTIONSYNC_CRI_LIB_PATH ${SDK_ROOT_PATH}/Core/CRI/dll/macOS)
 
@@ -105,20 +106,11 @@ target_link_libraries(${APP_NAME}
 # Specify include directories.
 target_include_directories(${APP_NAME} PRIVATE ${STB_PATH})
 
-# Copy resource directory to build directory.
+# Copy the resource, shaders, and Motion Sync Lib directories to the build directory.
 add_custom_command(
   TARGET ${APP_NAME}
   POST_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E
-      copy_directory ${RES_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/Resources
-)
-
-# Copy MotionSync Lib directory to build directory.
-add_custom_command(
-  TARGET ${APP_NAME}
-  POST_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E
-      copy_directory ${MOTIONSYNC_CRI_LIB_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/${MOTIONSYNC_CORE_DIR}
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/Resources
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${SAMPLE_SHADER_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/SampleShaders
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${MOTIONSYNC_CRI_LIB_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/${MOTIONSYNC_CORE_DIR}
 )

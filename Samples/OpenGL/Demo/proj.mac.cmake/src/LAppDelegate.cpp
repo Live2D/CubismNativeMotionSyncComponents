@@ -115,6 +115,9 @@ bool LAppDelegate::Initialize()
     _modelIndex = 0;
     LoadModel();
 
+    // シェーダー作成
+    _spriteShader = new LAppSpriteShader(_executeAbsolutePath.c_str());
+
     // 画像設定
     LoadGraph();
 
@@ -143,6 +146,11 @@ void LAppDelegate::Release()
 
     // テクスチャマネージャーの解放
     delete _textureManager;
+
+    if (_spriteShader)
+    {
+        delete _spriteShader;
+    }
 
     // Windowの削除
     glfwDestroyWindow(_window);
@@ -305,56 +313,6 @@ void LAppDelegate::OnTouchesEnded(float px, float py)
     }
 }
 
-GLuint LAppDelegate::CreateShader()
-{
-    //バーテックスシェーダのコンパイル
-    GLuint vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShader =
-        "#version 120\n"
-        "attribute vec3 position;"
-        "attribute vec2 uv;"
-        "varying vec2 vuv;"
-        "void main(void){"
-        "    gl_Position = vec4(position, 1.0);"
-        "    vuv = uv;"
-        "}";
-    glShaderSource(vertexShaderId, 1, &vertexShader, NULL);
-    glCompileShader(vertexShaderId);
-    if (!CheckShader(vertexShaderId))
-    {
-        return 0;
-    }
-
-    //フラグメントシェーダのコンパイル
-    GLuint fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShader =
-        "#version 120\n"
-        "varying vec2 vuv;"
-        "uniform sampler2D texture;"
-        "uniform vec4 baseColor;"
-        "void main(void){"
-        "    gl_FragColor = texture2D(texture, vuv) * baseColor;"
-        "}";
-    glShaderSource(fragmentShaderId, 1, &fragmentShader, NULL);
-    glCompileShader(fragmentShaderId);
-    if (!CheckShader(fragmentShaderId))
-    {
-        return 0;
-    }
-
-    //プログラムオブジェクトの作成
-    GLuint programId = glCreateProgram();
-    glAttachShader(programId, vertexShaderId);
-    glAttachShader(programId, fragmentShaderId);
-
-    // リンク
-    glLinkProgram(programId);
-
-    glUseProgram(programId);
-
-    return programId;
-}
-
 bool LAppDelegate::CheckShader(GLuint shaderId)
 {
     GLint status;
@@ -454,7 +412,7 @@ void LAppDelegate::ChangeNextModel()
 
 void LAppDelegate::LoadGraph()
 {
-    GLuint programId = CreateShader();
+    GLuint programId = _spriteShader->GetShaderId();
 
     int width, height;
     glfwGetWindowSize(_window, &width, &height);

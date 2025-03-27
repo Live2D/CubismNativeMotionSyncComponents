@@ -106,7 +106,8 @@ void CubismMotionSync::UpdateParameters(CubismModel *model, csmFloat32 deltaTime
         {
             for (csmUint32 targetIndex = 0; targetIndex < _data->GetSetting(processIndex).cubismParameterList.GetSize(); targetIndex++)
             {
-                if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex]))
+                if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex])
+                    || _data->GetSetting(processIndex).cubismParameterList[targetIndex].parameterIndex < 0)
                 {
                     continue;
                 }
@@ -124,7 +125,8 @@ void CubismMotionSync::UpdateParameters(CubismModel *model, csmFloat32 deltaTime
 
         for (csmUint32 targetIndex = 0; targetIndex < _data->GetSetting(processIndex).cubismParameterList.GetSize(); targetIndex++)
         {
-            if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex]))
+            if (isnan(_processorInfoList[processIndex]._analysisResult->GetValues()[targetIndex])
+                || _data->GetSetting(processIndex).cubismParameterList[targetIndex].parameterIndex < 0)
             {
                 continue;
             }
@@ -248,6 +250,7 @@ CubismMotionSync::CubismMotionSync(CubismModel* model, CubismMotionSyncData *dat
     {
         _processorInfoList.PushBack(CubismProcessorInfo(processorList[i], model, data->GetSetting(i)));
         _processorInfoList[i].Init(data->GetSetting(i));
+        CubismProcessorInfo::CreateAnalysisResult(&_processorInfoList[i]);
     }
 }
 
@@ -258,6 +261,7 @@ CubismMotionSync::~CubismMotionSync()
     {
         if (_processorInfoList[i]._processor)
         {
+            CubismProcessorInfo::DeleteAnalysisResult(&_processorInfoList[i]);
             _processorInfoList[i]._processor->Close();
         }
     }

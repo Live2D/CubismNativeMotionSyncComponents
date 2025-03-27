@@ -113,6 +113,12 @@ void LAppMotionSyncModel::Update()
         projection.Scale(static_cast<float>(height) / static_cast<float>(width), 1.0f);
     }
 
+    // 再生が終了していたらマイク入力に切り替える
+    if (!_soundData.IsPlay())
+    {
+        PlayMicrophone();
+    }
+
     // モデルのパラメータを更新
     UpdateModelParam();
 
@@ -195,7 +201,10 @@ void LAppMotionSyncModel::SetupModel()
 
         // 音声データ
         _soundFileList = _modelSetting->GetMotionSyncSoundFileList();
-        _soundIndex = _soundFileList.GetSize()- 1;
+        _soundIndex = _soundFileList.GetSize() - 1;
+
+        // 最初は音声ファイルを再生しないためマイク入力で始める
+        PlayMicrophone();
     }
 }
 
@@ -248,6 +257,12 @@ void LAppMotionSyncModel::PlayIndexSound()
         _soundData.LoadFile(_modelHomeDir + _soundFileList[_soundIndex], 0);
         _motionSync->SetSoundBuffer(0, _soundData.GetBuffer());
     }
+}
+
+void LAppMotionSyncModel::PlayMicrophone()
+{
+    _soundData.SetupMicrophone(Channels, SamplesPerSec, BitDepth, 0);
+    _motionSync->SetSoundBuffer(0, _soundData.GetBuffer());
 }
 
 void LAppMotionSyncModel::Draw(Csm::CubismMatrix44& matrix)

@@ -108,10 +108,10 @@ private:
             _audioLevelEffectRatio(0.0f),
             _samplesAudioBuff(NULL),
             _model(model),
+            _analysisResult(NULL),
             _currentRemainTime(0.0f)
         {
             Init(setting);
-            _analysisResult = _processor->CreateAnalysisResult();
         }
 
         /**
@@ -132,12 +132,40 @@ private:
             _currentRemainTime = 0.0f;
             for (csmUint32 i = 0; i < setting.cubismParameterList.GetSize(); i++)
             {
-                _lastSmoothedList.PushBack(_model->GetParameterValue(setting.cubismParameterList[i].parameterIndex));
-                _lastDampedList.PushBack(_model->GetParameterValue(setting.cubismParameterList[i].parameterIndex));
+                // パラメータが存在する場合は値を取得
+                // HACK: Listのインデックスを合わせるため、continueしない。
+                if (setting.cubismParameterList[i].parameterIndex >= 0)
+                {
+                    csmFloat32 parameterValue = _model->GetParameterValue(setting.cubismParameterList[i].parameterIndex);
+                    _lastSmoothedList.PushBack(parameterValue);
+                    _lastDampedList.PushBack(parameterValue);
+                }
             }
             _blendRatio = setting.blendRatio;
             _smoothing = setting.smoothing;
             _sampleRate = setting.sampleRate;
+        }
+
+        /**
+         * @brief 解析結果を格納するクラスのインスタンスを生成する
+         *
+         * @param[in]   info    このクラスのインスタンス
+         * 
+         */
+        static void CreateAnalysisResult(CubismProcessorInfo* info)
+        {
+            info->_analysisResult = info->_processor->CreateAnalysisResult();
+        }
+
+        /**
+         * @brief 解析結果を格納するクラスのインスタンスを破棄する
+         *
+         * @param[in]   info    このクラスのインスタンス
+         *
+         */
+        static void DeleteAnalysisResult(CubismProcessorInfo* info)
+        {
+            info->_processor->DeleteAnalysisResult(info->_analysisResult);
         }
 
         ICubismMotionSyncProcessor *_processor;

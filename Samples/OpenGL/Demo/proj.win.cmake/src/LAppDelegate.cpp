@@ -115,6 +115,9 @@ bool LAppDelegate::Initialize()
     _modelIndex = 0;
     LoadModel();
 
+    // シェーダーの作成
+    _spriteShader = new LAppSpriteShader();
+
     // 画像設定
     LoadGraph();
 
@@ -143,6 +146,8 @@ void LAppDelegate::Release()
 
     // テクスチャマネージャーの解放
     delete _textureManager;
+    // シェーダーの開放
+    delete _spriteShader;
 
     // Windowの削除
     glfwDestroyWindow(_window);
@@ -314,56 +319,6 @@ void LAppDelegate::OnTouchesEnded(float px, float py)
     }
 }
 
-GLuint LAppDelegate::CreateShader()
-{
-    //バーテックスシェーダのコンパイル
-    GLuint vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShader =
-        "#version 120\n"
-        "attribute vec3 position;"
-        "attribute vec2 uv;"
-        "varying vec2 vuv;"
-        "void main(void){"
-        "    gl_Position = vec4(position, 1.0);"
-        "    vuv = uv;"
-        "}";
-    glShaderSource(vertexShaderId, 1, &vertexShader, NULL);
-    glCompileShader(vertexShaderId);
-    if (!CheckShader(vertexShaderId))
-    {
-        return 0;
-    }
-
-    //フラグメントシェーダのコンパイル
-    GLuint fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShader =
-        "#version 120\n"
-        "varying vec2 vuv;"
-        "uniform sampler2D texture;"
-        "uniform vec4 baseColor;"
-        "void main(void){"
-        "    gl_FragColor = texture2D(texture, vuv) * baseColor;"
-        "}";
-    glShaderSource(fragmentShaderId, 1, &fragmentShader, NULL);
-    glCompileShader(fragmentShaderId);
-    if (!CheckShader(fragmentShaderId))
-    {
-        return 0;
-    }
-
-    //プログラムオブジェクトの作成
-    GLuint programId = glCreateProgram();
-    glAttachShader(programId, vertexShaderId);
-    glAttachShader(programId, fragmentShaderId);
-
-    // リンク
-    glLinkProgram(programId);
-
-    glUseProgram(programId);
-
-    return programId;
-}
-
 bool LAppDelegate::CheckShader(GLuint shaderId)
 {
     GLint status;
@@ -391,30 +346,43 @@ void LAppDelegate::LoadModelName()
 {
     // ResourcesPathの中にあるフォルダ名を全てクロールし、モデルが存在するフォルダを定義する。
     // フォルダはあるが同名の.model3.jsonが見つからなかった場合はリストに含めない。
+    // 一部文字が受け取れないためワイド文字で受け取ってUTF8に変換し格納する。
+
     csmString crawlPath(ResourcesPath);
     crawlPath += "*.*";
 
-    struct _finddata_t fdata;
-    intptr_t fh = _findfirst(crawlPath.GetRawString(), &fdata);
-    if (fh == -1) return;
+    wchar_t wideStr[MAX_PATH];
+    csmChar name[MAX_PATH];
+    LAppPal::ConvertMultiByteToWide(crawlPath.GetRawString(), wideStr, MAX_PATH);
+
+    struct _wfinddata_t fdata;
+    intptr_t fh = _wfindfirst(wideStr, &fdata);
+    if (fh == -1)
+    {
+        return;
+    }
 
     _modelNameList.Clear();
 
-    while (_findnext(fh, &fdata) == 0)
+    while (_wfindnext(fh, &fdata) == 0)
     {
-        if ((fdata.attrib & _A_SUBDIR) && strcmp(fdata.name, "..") != 0)
+        if ((fdata.attrib & _A_SUBDIR) && wcscmp(fdata.name, L"..") != 0)
         {
+            LAppPal::ConvertWideToMultiByte(fdata.name, name, MAX_PATH);
+
             // フォルダと同名の.model3.jsonがあるか探索する
             csmString model3jsonPath(ResourcesPath);
-            model3jsonPath += fdata.name;
+            model3jsonPath += name;
             model3jsonPath.Append(1, '/');
-            model3jsonPath += fdata.name;
+            model3jsonPath += name;
             model3jsonPath += ".model3.json";
 
-            struct _finddata_t fdata2;
-            if (_findfirst(model3jsonPath.GetRawString(), &fdata2) != -1)
+            LAppPal::ConvertMultiByteToWide(model3jsonPath.GetRawString(), wideStr, MAX_PATH);
+
+            struct _wfinddata_t fdata2;
+            if (_wfindfirst(wideStr, &fdata2) != -1)
             {
-                _modelNameList.PushBack(csmString(fdata.name));
+                _modelNameList.PushBack(csmString(name));
             }
         }
     }
@@ -452,7 +420,7 @@ void LAppDelegate::ChangeNextModel()
 
 void LAppDelegate::LoadGraph()
 {
-    GLuint programId = CreateShader();
+    GLuint programId = _spriteShader->GetShaderId();
 
     int width, height;
     glfwGetWindowSize(_window, &width, &height);

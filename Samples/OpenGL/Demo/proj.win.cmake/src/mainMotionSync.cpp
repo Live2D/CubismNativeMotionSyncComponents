@@ -11,13 +11,20 @@
 
 int main()
 {
+    // Setting the console character encoding to UTF-8
+    UINT preConsoleOutputCP = GetConsoleOutputCP();
+    SetConsoleOutputCP(65001);
+
     // create the application instance
     if (LAppDelegate::GetInstance()->Initialize() == GL_FALSE)
     {
+        SetConsoleOutputCP(preConsoleOutputCP);
         return 1;
     }
 
     LAppDelegate::GetInstance()->Run();
+
+    SetConsoleOutputCP(preConsoleOutputCP);
 
     return 0;
 }

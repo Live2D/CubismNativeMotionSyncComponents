@@ -5,7 +5,7 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-package com.live2d.demo.microphone;
+package com.live2d.demo;
 
 import android.Manifest;
 import android.app.Activity;

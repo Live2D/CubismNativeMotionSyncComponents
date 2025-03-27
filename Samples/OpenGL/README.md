@@ -35,13 +35,6 @@ For other development environments and operation environments, see [README.md](/
 ## Demo
 
 This is a sample that supports motionSync.
-There are two types of samples: the sound file version that uses sound files, and the microphone input version that supports microphone input.
-Please refer to the sections of each platform for the selection method.
-
-In the sound file version, motionSync is performed with the sound file.
-You can also switch sound files from the menu button.
-
-In the microphone input version, motionSync is performed by microphone input.
 
 The items contained in this directory are as follows.
 

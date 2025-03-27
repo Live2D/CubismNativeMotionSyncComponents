@@ -2,6 +2,21 @@ plugins {
     id 'com.android.application'
 }
 
+// SDK root path
+def sdkRootPath = file("${projectDir}/../../../../../..").canonicalFile
+// Search for NATIVE_DIR
+def nativeDir = file("${sdkRootPath}/../CubismNativeSamples")
+if (!nativeDir.exists()) {
+    def tmpDirs = file("${sdkRootPath}/..").listFiles().findAll { File f ->
+        f.directory && f.name.startsWith("CubismSdkForNative") && !f.name.endsWith(".zip")
+    }
+    if (!tmpDirs.isEmpty()) {
+        nativeDir = tmpDirs[0]
+    } else {
+        nativeDir = null
+    }
+}
+
 android {
     namespace = "com.live2d.demo"
 
@@ -18,7 +33,11 @@ android {
                 abiFilters = []
                 abiFilters.addAll(PROP_APP_ABI.split(':').collect{ it as String })
             }
+            cmake {
+                arguments "-DNATIVE_DIR=${nativeDir}", "-DSDK_ROOT_PATH=${sdkRootPath}"
+            }
         }
+        ndkVersion "26.3.11579264"
     }
     signingConfigs {
         debug {
@@ -30,30 +49,10 @@ android {
     }
 
     flavorDimensions = ["mode"]
-    productFlavors {
-        SoundFile {
-            dimension = "mode"
-            applicationId "com.live2d.demo.soundFile"
-            externalNativeBuild {
-                cmake {
-                    arguments += "-DCSM_MOTIONSYNC_FLAVOR_DEMO=SoundFile"
-                }
-            }
-        }
-        Microphone {
-            dimension = "mode"
-            applicationId "com.live2d.demo.microphone"
-            externalNativeBuild {
-                cmake {
-                    arguments += "-DCSM_MOTIONSYNC_FLAVOR_DEMO=Microphone"
-                }
-            }
-        }
-    }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     buildTypes {
         release {
@@ -69,6 +68,7 @@ android {
     }
     sourceSets.main {
         assets.srcDir "../../../../../Resources"
+        assets.srcDir "${nativeDir}/Samples/OpenGL/Shaders/StandardES"
         jniLibs.srcDirs "../../../../../../Core/CRI/dll/Android"
     }
 }

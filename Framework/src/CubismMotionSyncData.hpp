@@ -47,7 +47,7 @@ struct CubismMotionSyncDataCubismParameter
     csmFloat32 damper;
     csmInt32 smooth;
 
-    csmUint32 parameterIndex;
+    csmInt32 parameterIndex;
 };
 
 struct CubismMotionSyncDataAudioParameter

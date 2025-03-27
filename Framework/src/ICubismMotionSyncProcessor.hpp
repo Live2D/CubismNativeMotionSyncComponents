@@ -26,6 +26,14 @@ public:
     CubismMotionSyncEngineAnalysisResult* CreateAnalysisResult();
 
     /**
+     * @brief 解析結果を格納するクラスのインスタンスを破棄する
+     *
+     * @param[in]   analysisResult    破棄対象のインスタンス
+     *
+     */
+    void DeleteAnalysisResult(CubismMotionSyncEngineAnalysisResult* analysisResult);
+
+    /**
      * @brief モーションシンクの解析時に使用するマッピング情報のクラスを取得する
      *
      * @return モーションシンクの解析時に使用するマッピング情報のクラス

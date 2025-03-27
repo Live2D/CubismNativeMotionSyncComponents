@@ -10,7 +10,6 @@ This folder contains header files and platform-specific library files for develo
 | Platform | Architecture | dll | lib | Path | Note |
 | --- | --- | --- | --- | --- | --- |
 | Android | ARM64 | ✓ |   | Android/arm64-v8a |   |
-| Android | ARMv7 | ✓ |   | Android/armeabi-v7a | This library is currently deprecated and will be removed in the near future. |
 | Android | x86 | ✓ |   | Android/x86 |   |
 | Android | x86_64 | ✓ |   | Android/x86_64 |   |
 | iOS | ARM64 |   | ✓ | iOS/xxx-iphoneos | iOS Devices |

@@ -9,7 +9,7 @@
 #include <cmath>
 #include <string>
 #include "LAppPal.hpp"
-#include "../../main/cpp/LAppDelegate.hpp"
+#include "LAppDelegate.hpp"
 #include "LAppDefine.hpp"
 #include "LAppTextureManager.hpp"
 #include "TouchManager.hpp"
@@ -36,13 +36,15 @@ namespace {
 }
 
 LAppView::LAppView():
-        _programId(0),
         _back(NULL),
+        _fastForward(NULL),
         _gear(NULL),
         _power(NULL),
         _userModel(NULL),
         _modelIndex(0),
-        _changeModel(false)
+        _changeModel(false),
+        _changeSound(false),
+        _spriteShader(nullptr)
 {
     // 表示するモデルの一覧を作成
     LoadModelName();
@@ -51,9 +53,15 @@ LAppView::LAppView():
 LAppView::~LAppView()
 {
     delete _back;
+    delete _fastForward;
     delete _gear;
     delete _power;
     _userModel->DeleteRenderer();
+    if (_spriteShader)
+    {
+        delete _spriteShader;
+        _spriteShader = nullptr;
+    }
     delete _userModel;
 }
 
@@ -61,15 +69,14 @@ void LAppView::Initialize()
 {
     // モデルの初期化
     LoadModel();
-}
 
-void LAppView::InitializeShader()
-{
-    _programId = LAppDelegate::GetInstance()->CreateShader();
+    _spriteShader = new LAppSpriteShader();
 }
 
 void LAppView::InitializeSprite()
 {
+    GLuint programId = _spriteShader->GetShaderId();
+
     int width = LAppDelegate::GetInstance()->GetWindowWidth();
     int height = LAppDelegate::GetInstance()->GetWindowHeight();
 
@@ -86,11 +93,28 @@ void LAppView::InitializeSprite()
 
     if (_back == NULL)
     {
-        _back = new LAppSprite(x, y, fWidth, fHeight, backgroundTexture->id, _programId);
+        _back = new LAppSprite(x, y, fWidth, fHeight, backgroundTexture->id, programId);
     }
     else
     {
         _back->ReSize(x, y, fWidth, fHeight);
+    }
+
+    imageName = FastForwardImageName;
+    LAppTextureManager::TextureInfo* FastForwardTexture = textureManager->CreateTextureFromPngFile(resourcesPath + imageName);
+
+    x = (FastForwardTexture->width * 0.5f + 96.f);
+    y = (height - FastForwardTexture->height * 0.5f);
+    fWidth = static_cast<float>(FastForwardTexture->width);
+    fHeight = static_cast<float>(FastForwardTexture->height);
+
+    if (_fastForward == NULL)
+    {
+        _fastForward = new LAppSprite(x, y, fWidth, fHeight, FastForwardTexture->id, programId);
+    }
+    else
+    {
+        _fastForward->ReSize(x, y, fWidth, fHeight);
     }
 
     imageName = GearImageName;
@@ -103,7 +127,7 @@ void LAppView::InitializeSprite()
 
     if (_gear == NULL)
     {
-        _gear = new LAppSprite(x, y, fWidth, fHeight, gearTexture->id, _programId);
+        _gear = new LAppSprite(x, y, fWidth, fHeight, gearTexture->id, programId);
     }
     else
     {
@@ -120,7 +144,7 @@ void LAppView::InitializeSprite()
 
     if (_power == NULL)
     {
-        _power = new LAppSprite(x, y, fWidth, fHeight, powerTexture->id, _programId);
+        _power = new LAppSprite(x, y, fWidth, fHeight, powerTexture->id, programId);
     }
     else
     {
@@ -134,12 +158,21 @@ void LAppView::Render()
     int maxWidth = LAppDelegate::GetInstance()->GetWindowWidth();
     int maxHeight = LAppDelegate::GetInstance()->GetWindowHeight();
     _back->SetWindowSize(maxWidth, maxHeight);
+    _fastForward->SetWindowSize(maxWidth, maxHeight);
     _gear->SetWindowSize(maxWidth, maxHeight);
     _power->SetWindowSize(maxWidth, maxHeight);
 
     _back->Render();
+    _fastForward->Render();
     _gear->Render();
     _power->Render();
+
+    // 音声の切り替え
+    if (_changeSound)
+    {
+        _changeSound = false;
+        _userModel->ChangeNextIndexSound();
+    }
 
     // モデルの切り替え
     if (_changeModel)
@@ -162,6 +195,12 @@ void LAppView::OnTouchesMoved(float pointX, float pointY) const
 
 void LAppView::OnTouchesEnded(float pointX, float pointY)
 {
+    // 早送りにタップしたか
+    if (_fastForward->IsHit(pointX, pointY))
+    {
+        _changeSound = true;
+    }
+
     // 歯車にタップしたか
     if (_gear->IsHit(pointX, pointY))
     {

@@ -3,19 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 # Set app name.
 set(APP_NAME Demo)
 # Set directory paths.
-set(SDK_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../..)
-file(GLOB NATIVE_DIR "${SDK_ROOT_PATH}/../CubismNativeSamples")
-# Find non-zip file.
-if(NOT NATIVE_DIR)
-    file(GLOB TMP_DIR "${SDK_ROOT_PATH}/../CubismSdkForNative*")
-    foreach(DIR ${TMP_DIR})
-        get_filename_component(LASTNAME ${DIR} NAME)
-        if(NOT "${LASTNAME}" MATCHES "\\.zip$")
-            set(NATIVE_DIR ${DIR})
-            break()
-        endif()
-    endforeach()
-endif()
+# SDK_ROOT_PATH and NATIVE_DIR are defined in the build.gradle.
 set(NATIVE_PATH ${NATIVE_DIR} CACHE PATH [[Native File Path]] FORCE)
 set(NATIVE_CORE_PATH $CACHE{NATIVE_PATH}/Core)
 set(MOTIONSYNC_CRI_CORE_PATH ${SDK_ROOT_PATH}/Core/CRI/dll/Android)
@@ -57,8 +45,6 @@ target_compile_definitions(MotionSyncFramework PRIVATE MOTIONSYNC_CORE_CRI_LIB_P
 add_library(${APP_NAME} SHARED)
 # Add source files.
 add_subdirectory(src/main/cpp)
-# Add source file for the flavors.
-add_subdirectory(src/${CSM_MOTIONSYNC_FLAVOR_DEMO}/cpp)
 # Link libraries to app.
 target_link_libraries(${APP_NAME}
   Framework

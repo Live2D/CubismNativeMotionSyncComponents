@@ -13,6 +13,7 @@
 #include "LAppAllocator.hpp"
 #include "LAppMotionSyncModel.hpp"
 #include "LAppSprite.hpp"
+#include "LAppSpriteShader.hpp"
 
 class LAppView;
 class LAppTextureManager;
@@ -173,11 +174,6 @@ private:
      * @brief スプライト系のサイズ再設定
      */
     void ResizeSprite();
-
-    /**
-    * @brief シェーダーを登録する。
-    */
-    GLuint CreateShader();
     
     /**
      * @brief   実行中のプログラムファイルパスを設定する
@@ -205,6 +201,8 @@ private:
 
     Csm::csmVector<Csm::csmString> _modelNameList; ///< モデルディレクトリ名のリスト
     Csm::csmInt32 _modelIndex; ///< 表示するシーンモデル名のインデックス値
+
+    LAppSpriteShader* _spriteShader;   ///< シェーダー作成委譲クラス
 };
 
 class EventHandler

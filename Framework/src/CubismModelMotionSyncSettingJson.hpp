@@ -44,6 +44,21 @@ public:
      */
     csmVector<csmString> GetMotionSyncSoundFileList();
 
+    /**
+    * @brief モーションシンク設定の名称を .model3.json の Motion から取得する。
+    */
+    const csmChar* GetMotionSyncSettingNameFromMotion(const csmChar* groupName, csmInt32 index) const;
+
+    /**
+     * @brief モーションシンクで使うモーションファイルと音声ファイルの結びつけを行うマップを取得
+     */
+    void GetMotionSyncLinkAudioMap(csmMap<csmString, csmString>& fileMap);
+
+    /**
+     * @brief モーションシンクで使うモーションファイルパスとモーションシンク設定の結びつけを行うマップを取得
+     */
+    void GetMotionSyncLinkSettingMap(csmMap<csmString, csmString>& fileMap);
+
 private:
     // MotionSync用のJSONノードのキャッシュ
     Utils::Value* _motionSyncJsonValue;
@@ -54,6 +69,13 @@ private:
      * @return motionsync3.jsonファイルがあるか
      */
     csmBool IsExistMotionSyncFiles() const;
+
+    /**
+     * @brief Motionキーにモーションシンク設定名があるか返す
+     *
+     * @return モーションシンク設定名があるか
+     */
+    csmBool IsExistMotionSyncSettingNameFromMotion(const csmChar* groupName, csmInt32 index) const;
 };
 
 }}}}

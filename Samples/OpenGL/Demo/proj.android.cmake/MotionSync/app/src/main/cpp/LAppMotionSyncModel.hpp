@@ -12,13 +12,14 @@
 #include "CubismMotionSync.hpp"
 #include "CubismModelMotionSyncSettingJson.hpp"
 #include "LAppAudioManager.hpp"
+#include "LAppModel_Common.hpp"
 
 /**
   * @brief ユーザーが実際に使用するモデルの実装クラス<br>
   *         モデル生成、機能コンポーネント生成、更新処理とレンダリングの呼び出しを行う。
   *
   */
-class LAppMotionSyncModel : public Csm::CubismUserModel
+class LAppMotionSyncModel : public LAppModel_Common
 {
 public:
     /**

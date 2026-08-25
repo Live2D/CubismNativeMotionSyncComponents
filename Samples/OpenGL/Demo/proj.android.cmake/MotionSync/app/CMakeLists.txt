@@ -45,6 +45,10 @@ target_compile_definitions(MotionSyncFramework PRIVATE MOTIONSYNC_CORE_CRI_LIB_P
 add_library(${APP_NAME} SHARED)
 # Add source files.
 add_subdirectory(src/main/cpp)
+if (CSM_MOTION_DEMO)
+  # Add source file for the Motion Demo.
+  add_subdirectory(src/Motion/cpp)
+endif()
 # Link libraries to app.
 target_link_libraries(${APP_NAME}
   Framework
@@ -55,3 +59,7 @@ target_link_libraries(${APP_NAME}
 )
 # Specify include directories.
 target_include_directories(${APP_NAME} PRIVATE ${STB_PATH})
+
+# Android 16KB page-size option(NDK r26 and lower)
+# https://developer.android.com/guide/practices/page-sizes?hl=en#compile-16-kb-alignment
+target_link_options(${APP_NAME} PRIVATE "-Wl,-z,max-page-size=16384")

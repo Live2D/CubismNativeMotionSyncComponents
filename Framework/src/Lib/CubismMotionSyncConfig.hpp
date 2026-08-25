@@ -40,7 +40,7 @@ struct MotionSyncEngineConfig_CRI
 struct MotionSyncContextConfig_CRI
 {
     MotionSyncContextConfig_CRI(
-	    Csm::csmInt32 sampleRate = 0
+        Csm::csmInt32 sampleRate = 0
         , Csm::csmInt32 bitDepth = 0)
         : SampleRate(sampleRate)
         , BitDepth(bitDepth)

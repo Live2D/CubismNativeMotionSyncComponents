@@ -84,42 +84,42 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 | Development Tool | Version |
 | --- | --- |
-| Android Studio | Meerkat 2024.3.1 |
-| CMake | 3.31.6 |
+| Android Studio | Quail 3 2026.1.3 |
+| CMake | 3.31.8 |
 | Visual Studio 2015 | Update 3 |
-| Visual Studio 2017 | 15.9.62 |
-| Visual Studio 2019 | 16.11.45 |
-| Visual Studio 2022 | 17.13.3 |
-| Xcode | 16.2 |
+| Visual Studio 2017 | 15.9.82 |
+| Visual Studio 2019 | 16.11.59 |
+| Visual Studio 2022 | 17.14.38 |
+| Xcode | 26.6 |
 
 ### Android
 
 | Android SDK tools | Version |
 | --- | --- |
-| Android NDK | 26.3.11579264 |
-| Android SDK | 35.0.2 |
-| CMake | 3.22.1 |
+| Android NDK | 29.0.14206865 |
+| Android SDK | 36.1.0 |
+| CMake | 4.1.2 |
 
 
 ## Operation environment
 
 | Platform | Version |
 | --- | --- |
-| iOS / iPadOS | 18.3.2 |
-| macOS | 18.3.1 |
-| Windows 10 | 22H2 |
-| Windows 11 | 24H2 |
+| iOS / iPadOS | 26.6 |
+| macOS | 26.6 |
+| Windows 11 | 25H2 |
 
 ### Android
 
-| Version | Device | Tegra |
-| --- | --- | --- |
-| 15 | Pixel 7a, Xperia 10 V | |
-| 7.1.1 | Nexus 9 | ✔︎ |
+| バージョン | デバイス | Tegra | 16KB ページサイズ *1 |
+| --- | --- | --- | --- |
+| 16 | Pixel 9 | | ✔︎ |
+| 16 | Pixel 7a | |  |
+| 7.1.1 | Nexus 9 | ✔︎ | |
 
 ### Cubism SDK for Native
 
-[Cubism 5 SDK for Native R3](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.3)
+[Cubism 5 SDK for Native R4_1](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.4.1)
 
 
 ## Sound device

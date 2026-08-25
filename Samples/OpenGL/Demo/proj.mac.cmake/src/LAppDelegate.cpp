@@ -243,6 +243,8 @@ void LAppDelegate::InitializeCubism()
     //setup cubism
     _cubismOption.LogFunction = LAppPal::PrintMessageLn;
     _cubismOption.LoggingLevel = Csm::CubismFramework::Option::LogLevel_Verbose;
+    _cubismOption.LoadFileFunction = LAppPal::LoadFileAsBytes;
+    _cubismOption.ReleaseBytesFunction = LAppPal::ReleaseBytes;
     Csm::CubismFramework::StartUp(&_cubismAllocator, &_cubismOption);
 
     //Initialize cubism
@@ -536,4 +538,8 @@ void LAppDelegate::SetExecuteAbsolutePath()
     _NSGetExecutablePath(path, &size);
     this->_executeAbsolutePath = dirname(path);
     this->_executeAbsolutePath += "/";
+
+    // Frameworkが相対パス（例: "FrameworkShaders/..."）で読み込むファイルを
+    // 実行ファイル基準で解決させるため、共通LAppPalにも絶対パスを設定する
+    LAppPal::SetExecutableAbsolutePath(this->_executeAbsolutePath);
 }

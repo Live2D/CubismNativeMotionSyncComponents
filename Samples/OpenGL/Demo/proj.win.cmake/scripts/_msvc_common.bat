@@ -56,6 +56,24 @@ if "%SELECTED%" equ "1" (
   exit /b 1
 )
 
+rem Demo application selection
+echo.
+echo Select which Demo to build.
+echo **************************************************
+echo 1. SoundFile ^& Microphone Demo
+echo 2. Motion Demo
+echo.
+choice /c:12 /n /m ">"
+set SELECTED=%errorlevel%
+if "%SELECTED%" equ "1" (
+  set MOTION_DEMO=OFF
+) else if "%SELECTED%" equ "2" (
+  set MOTION_DEMO=ON
+) else (
+  echo [CubismNativeMotionSyncSamples] Invalid option.
+  exit /b 1
+)
+
 rem ========
 rem Validate
 rem ========
@@ -84,12 +102,20 @@ if "%CORE_CRL_MD%" equ "ON" (
   set CORE_CRL=mt
 )
 
-set BUILD_PATH=..\build\%GENERATOR%_msvc%MSVC_VERSION%_%ARCHITECTURE%_%CORE_CRL%
+rem デモ種別ごとにビルドディレクトリを分ける（成果物の上書き防止）
+if "%MOTION_DEMO%" equ "ON" (
+  set VOLUME=Motion
+) else (
+  set VOLUME=Default
+)
+
+set BUILD_PATH=..\build\%GENERATOR%_msvc%MSVC_VERSION%_%ARCHITECTURE%_%CORE_CRL%_%VOLUME%
 
 if "%GENERATOR%" equ "nmake" (
   cmake -S .. -B "%BUILD_PATH%" ^
     -G "NMake Makefiles" ^
     -D CMAKE_BUILD_TYPE="Release" ^
+    -D CSM_MOTION_DEMO=%MOTION_DEMO% ^
     -D CORE_CRL_MD=%CORE_CRL_MD%
   if %errorlevel% neq 0 exit /b %errorlevel%
   cd "%BUILD_PATH%" && nmake
@@ -98,6 +124,7 @@ if "%GENERATOR%" equ "nmake" (
   cmake -S .. -B "%BUILD_PATH%" ^
     -G "Visual Studio %MSVC_NUMBER% %MSVC_VERSION%" ^
     -A %CMAKE_A_OPTION% ^
+    -D CSM_MOTION_DEMO=%MOTION_DEMO% ^
     -D CORE_CRL_MD=%CORE_CRL_MD%
   if %errorlevel% neq 0 exit /b %errorlevel%
 ) else (

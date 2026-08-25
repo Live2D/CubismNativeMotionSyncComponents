@@ -6,8 +6,38 @@ SCRIPT_PATH=$(cd $(dirname $0) && pwd)
 CMAKE_PATH=$SCRIPT_PATH/..
 BUILD_PATH=$SCRIPT_PATH/../build/make_xcode
 
+MOTION_DEMO=OFF
+# デモ種別ごとにビルドディレクトリを分けるためのサフィックス
+DEMO_TYPE=default
+
+set_demo_type()
+{
+  case "$1" in
+    'Motion' | 'motion' )
+      MOTION_DEMO=ON
+      DEMO_TYPE=motion
+      ;;
+  esac
+}
+
+if [ $# -eq 1 ]; then
+  set_demo_type "$1"
+else
+  PS3="Select the demo type number to use: "
+  select var in 'SoundFile & Microphone' 'Motion'
+  do
+    if set_demo_type "$var"; then
+      break
+    fi
+  done
+fi
+
+# デモ種別ごとにビルドディレクトリを分ける（成果物の上書き防止）
+BUILD_PATH="${BUILD_PATH}_${DEMO_TYPE}"
+
 # Run CMake.
 cmake -S "$CMAKE_PATH" \
   -B "$BUILD_PATH" \
+  -D CSM_MOTIONSYNC_MOTION_DEMO="$MOTION_DEMO" \
   -D CMAKE_BUILD_TYPE=Release
 cd "$BUILD_PATH" && make

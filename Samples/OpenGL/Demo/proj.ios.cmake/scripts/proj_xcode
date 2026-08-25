@@ -23,6 +23,9 @@ THIRD_PARTY_PATH=$SAMPLES_PATH/Samples/OpenGL/thirdParty
 
 PLATFORM=NONE
 NAME=unknown
+MOTION_DEMO=NONE
+# デモ種別ごとにビルドディレクトリを分けるためのサフィックス
+DEMO_TYPE=default
 PS3="Select the platform number to use: "
 select var in 'iphoneOS (arm64)' 'iphoneOS Simulator (x86_64)'
 do
@@ -38,10 +41,25 @@ if [ "$PLATFORM" = NONE ]; then
   exit -1
 fi
 
+if [ "$MOTION_DEMO" = NONE ]; then
+  PS3="Select the demo type number to use: "
+  select var in 'SoundFile & Microphone' 'Motion'
+  do
+      case "$var" in
+        'Motion' | 'motion' )
+          MOTION_DEMO=ON; DEMO_TYPE=motion ;;
+        * )
+          MOTION_DEMO=OFF; DEMO_TYPE=default ;;
+      esac
+      break
+  done
+fi
+
 # Run CMake.
 cmake -S "$CMAKE_PATH" \
-  -B "${BUILD_PATH}_${NAME}" \
+  -B "${BUILD_PATH}_${NAME}_${DEMO_TYPE}" \
   -D CMAKE_TOOLCHAIN_FILE="$THIRD_PARTY_PATH/ios-cmake/ios.toolchain.cmake" \
   -D PLATFORM=$PLATFORM \
   -D NATIVE_PATH=$SAMPLES_PATH \
+  -D CSM_MOTIONSYNC_MOTION_DEMO="$MOTION_DEMO" \
   -G Xcode

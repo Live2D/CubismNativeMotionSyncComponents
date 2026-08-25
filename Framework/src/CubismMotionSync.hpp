@@ -16,6 +16,96 @@
 
 namespace Live2D { namespace Cubism { namespace Framework { namespace MotionSync {
 
+struct CubismProcessorInfo
+{
+    /**
+     * @brief コンストラクタ
+     *
+     * @param[in]   processor  プロセッサ
+     * @param[in]   setting    jsonから読んだ中身
+     *
+     */
+    CubismProcessorInfo(ICubismMotionSyncProcessor* processor, CubismModel* model, CubismMotionSyncDataSetting setting) :
+        _processor(processor),
+        _blendRatio(0.0f),
+        _smoothing(1),
+        _sampleRate(30.0f),
+        _audioLevelEffectRatio(0.0f),
+        _samplesAudioBuff(NULL),
+        _model(model),
+        _analysisResult(NULL),
+        _currentRemainTime(0.0f)
+    {
+        Init(setting);
+    }
+
+    /**
+     * @brief デストラクタ
+     */
+    virtual ~CubismProcessorInfo()
+    {}
+
+    /**
+     * @brief 値の初期化
+     *
+     * @param[in]   model    jsonから読んだ中身
+     * @param[in]   setting    jsonから読んだ中身
+     *
+     */
+    void Init(CubismMotionSyncDataSetting setting)
+    {
+        _currentRemainTime = 0.0f;
+        for (csmUint32 i = 0; i < setting.cubismParameterList.GetSize(); i++)
+        {
+            // パラメータが存在する場合は値を取得
+            // HACK: Listのインデックスを合わせるため、continueしない。
+            if (setting.cubismParameterList[i].parameterIndex >= 0)
+            {
+                csmFloat32 parameterValue = _model->GetParameterValue(setting.cubismParameterList[i].parameterIndex);
+                _lastSmoothedList.PushBack(parameterValue);
+                _lastDampedList.PushBack(parameterValue);
+            }
+        }
+        _blendRatio = setting.blendRatio;
+        _smoothing = setting.smoothing;
+        _sampleRate = setting.sampleRate;
+    }
+
+    /**
+     * @brief 解析結果を格納するクラスのインスタンスを生成する
+     *
+     * @param[in]   info    このクラスのインスタンス
+     *
+     */
+    static void CreateAnalysisResult(CubismProcessorInfo* info)
+    {
+        info->_analysisResult = info->_processor->CreateAnalysisResult();
+    }
+
+    /**
+     * @brief 解析結果を格納するクラスのインスタンスを破棄する
+     *
+     * @param[in]   info    このクラスのインスタンス
+     *
+     */
+    static void DeleteAnalysisResult(CubismProcessorInfo* info)
+    {
+        info->_processor->DeleteAnalysisResult(info->_analysisResult);
+    }
+
+    ICubismMotionSyncProcessor* _processor;
+    csmFloat32 _blendRatio;
+    csmInt32 _smoothing;
+    csmFloat32 _sampleRate;
+    csmFloat32 _audioLevelEffectRatio;
+    CubismMotionSyncAudioBuffer<csmFloat32>* _samplesAudioBuff;
+    CubismModel* _model;
+    CubismMotionSyncEngineAnalysisResult* _analysisResult;
+    csmFloat32 _currentRemainTime;
+    csmVector<csmFloat32> _lastSmoothedList;
+    csmVector<csmFloat32> _lastDampedList;
+};
+
 /**
  * @brief モーションシンク機能
  *
@@ -90,97 +180,17 @@ public:
      */
     void SetSampleRate(csmUint32 processIndex, csmFloat32 sampleRate);
 
+    /*
+     * @brief モーションシンクデータを取得
+     */
+    CubismMotionSyncData* GetCubismMotionSyncData() const;
+
+    /*
+     * @brief モーションシンクのプロセス用情報のリストを取得
+     */
+    csmVector<CubismProcessorInfo> GetCubismProcessorInfoList() const;
+
 private:
-    struct CubismProcessorInfo
-    {
-        /**
-         * @brief コンストラクタ
-         *
-         * @param[in]   processor  プロセッサ
-         * @param[in]   setting    jsonから読んだ中身
-         *
-         */
-        CubismProcessorInfo(ICubismMotionSyncProcessor* processor, CubismModel* model, CubismMotionSyncDataSetting setting) :
-            _processor(processor),
-            _blendRatio(0.0f),
-            _smoothing(1),
-            _sampleRate(30.0f),
-            _audioLevelEffectRatio(0.0f),
-            _samplesAudioBuff(NULL),
-            _model(model),
-            _analysisResult(NULL),
-            _currentRemainTime(0.0f)
-        {
-            Init(setting);
-        }
-
-        /**
-         * @brief デストラクタ
-         */
-        virtual ~CubismProcessorInfo()
-        {}
-
-        /**
-         * @brief 値の初期化
-         *
-         * @param[in]   model    jsonから読んだ中身
-         * @param[in]   setting    jsonから読んだ中身
-         *
-         */
-        void Init(CubismMotionSyncDataSetting setting)
-        {
-            _currentRemainTime = 0.0f;
-            for (csmUint32 i = 0; i < setting.cubismParameterList.GetSize(); i++)
-            {
-                // パラメータが存在する場合は値を取得
-                // HACK: Listのインデックスを合わせるため、continueしない。
-                if (setting.cubismParameterList[i].parameterIndex >= 0)
-                {
-                    csmFloat32 parameterValue = _model->GetParameterValue(setting.cubismParameterList[i].parameterIndex);
-                    _lastSmoothedList.PushBack(parameterValue);
-                    _lastDampedList.PushBack(parameterValue);
-                }
-            }
-            _blendRatio = setting.blendRatio;
-            _smoothing = setting.smoothing;
-            _sampleRate = setting.sampleRate;
-        }
-
-        /**
-         * @brief 解析結果を格納するクラスのインスタンスを生成する
-         *
-         * @param[in]   info    このクラスのインスタンス
-         * 
-         */
-        static void CreateAnalysisResult(CubismProcessorInfo* info)
-        {
-            info->_analysisResult = info->_processor->CreateAnalysisResult();
-        }
-
-        /**
-         * @brief 解析結果を格納するクラスのインスタンスを破棄する
-         *
-         * @param[in]   info    このクラスのインスタンス
-         *
-         */
-        static void DeleteAnalysisResult(CubismProcessorInfo* info)
-        {
-            info->_processor->DeleteAnalysisResult(info->_analysisResult);
-        }
-
-        ICubismMotionSyncProcessor *_processor;
-        csmFloat32 _blendRatio;
-        csmInt32 _smoothing;
-        csmFloat32 _sampleRate;
-        csmFloat32 _audioLevelEffectRatio;
-        CubismMotionSyncAudioBuffer<csmFloat32>* _samplesAudioBuff;
-        CubismModel *_model;
-        CubismMotionSyncEngineAnalysisResult *_analysisResult;
-        csmFloat32 _currentRemainTime;
-        csmVector<csmFloat32> _lastSmoothedList;
-        csmVector<csmFloat32> _lastDampedList;
-    };
-
     CubismMotionSyncData *_data;
     csmVector<CubismProcessorInfo> _processorInfoList;
 

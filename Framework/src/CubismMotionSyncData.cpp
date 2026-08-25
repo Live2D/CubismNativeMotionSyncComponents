@@ -134,6 +134,11 @@ csmVector<CubismMotionSyncEngineMappingInfo> CubismMotionSyncData::GetMappingInf
     return mappingInfoList;
 }
 
+csmUint32 CubismMotionSyncData::GetSettingListSize()
+{
+    return _settingList.GetSize();
+}
+
 CubismMotionSyncData::CubismMotionSyncData(csmInt32 version, CubismMotionSyncDataMeta meta, csmVector<CubismMotionSyncDataSetting> settingList) :
     _version(version),
     _meta(meta),

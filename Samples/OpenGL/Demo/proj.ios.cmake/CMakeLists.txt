@@ -13,6 +13,7 @@ set(STB_PATH ${THIRD_PARTY_PATH}/stb)
 set(RES_PATH ${SDK_ROOT_PATH}/Samples/Resources)
 set(MOTIONSYNC_CRI_LIB_PATH ${MOTIONSYNC_CORE_PATH}/CRI)
 set(CSM_MOTIONSYNC_USE_STATIC_LIB TRUE CACHE STRING [[MotionSync: Using static engine library.]] FORCE)
+set(FRAMEWORK_SHADER_PATH ${NATIVE_FRAMEWORK_PATH}/src/Rendering/OpenGL/Shaders/StandardES)
 
 # Set project.
 project(${APP_NAME})
@@ -91,7 +92,7 @@ find_library(OPENGLES_LIBRARY OpenGLES)
 find_library(QUARTZCORE_LIBRARY QuartzCore)
 find_library(UIKIT_LIBRARY UIKit)
 find_library(AVFOUNDATION_LIBRARY AVFoundation)
-find_library(AUDIOTOOLBOX_LIBRARY AudioToolBox)
+find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
 
 # Make executable app.
 add_executable(${APP_NAME})
@@ -122,6 +123,9 @@ add_custom_command(
   COMMAND
     ${CMAKE_COMMAND} -E
       copy_directory ${RES_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/Res
+  COMMAND
+    ${CMAKE_COMMAND} -E
+      copy_directory ${FRAMEWORK_SHADER_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/FrameworkShaders
 )
 
 # Add information aboud XCode project.

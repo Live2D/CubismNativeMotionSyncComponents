@@ -161,6 +161,16 @@ void CubismMotionSync::SetSampleRate(csmUint32 processIndex, csmFloat32 sampleRa
     }
 }
 
+CubismMotionSyncData* CubismMotionSync::GetCubismMotionSyncData() const
+{
+    return  _data;
+}
+
+csmVector<CubismProcessorInfo> CubismMotionSync::GetCubismProcessorInfoList() const
+{
+    return _processorInfoList;
+}
+
 EngineType CubismMotionSync::ToEngineType(csmString engineName)
 {
     EngineType engineType = EngineType_Unknown;

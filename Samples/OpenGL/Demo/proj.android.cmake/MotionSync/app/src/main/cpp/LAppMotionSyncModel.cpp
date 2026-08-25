@@ -20,28 +20,8 @@ using namespace MotionSync;
 using namespace LAppDefine;
 using namespace LAppMotionSyncDefine;
 
-namespace {
-    csmByte* CreateBuffer(const csmChar* path, csmSizeInt* size)
-    {
-        if (LAppDefine::DebugLogEnable)
-        {
-            LAppPal::PrintLogLn("[APP]create buffer: %s ", path);
-        }
-        return LAppPal::LoadFileAsBytes(path, size);
-    }
-
-    void DeleteBuffer(csmByte* buffer, const csmChar* path = "")
-    {
-        if (DebugLogEnable)
-        {
-            LAppPal::PrintLogLn("[APP]delete buffer: %s", path);
-        }
-        LAppPal::ReleaseBytes(buffer);
-    }
-}
-
 LAppMotionSyncModel::LAppMotionSyncModel()
-    : CubismUserModel()
+    : LAppModel_Common()
     , _modelSetting(NULL)
     , _motionSync(NULL)
     , _soundIndex(0)

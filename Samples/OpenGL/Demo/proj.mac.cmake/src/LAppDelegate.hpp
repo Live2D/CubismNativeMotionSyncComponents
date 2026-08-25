@@ -10,7 +10,7 @@
 #include <string>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "LAppAllocator.hpp"
+#include "LAppAllocator_Common.hpp"
 #include "LAppMotionSyncModel.hpp"
 #include "LAppSprite.hpp"
 #include "LAppSpriteShader.hpp"
@@ -185,7 +185,7 @@ private:
     int _windowHeight; ///< ウィンドウサイズ高さの保存
     LAppTextureManager* _textureManager; ///< テクスチャマネージャー
 
-    LAppAllocator _cubismAllocator; ///< Cubism SDK Allocator
+    LAppAllocator_Common _cubismAllocator; ///< Cubism SDK Allocator
     Csm::CubismFramework::Option _cubismOption; ///< Cubism SDK Option
     bool _captured; ///< クリックしているか
     float _mouseX; ///< マウスX座標

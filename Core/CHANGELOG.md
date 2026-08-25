@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## 2026-08-25
+
+### Added
+
+* [Unity,Native] Add support Arm64 static library for iphonesimulator.
+
+### Changed
+
+* [Unity,Native] Implement support for Android 16KB page size.
+
+
 ## 2024-11-28
 
 ### Removed

@@ -26,6 +26,7 @@ set(GLEW_PATH ${THIRD_PARTY_PATH}/glew)
 set(GLFW_PATH ${THIRD_PARTY_PATH}/glfw)
 set(RES_PATH ${SDK_ROOT_PATH}/Samples/Resources)
 set(SAMPLE_SHADER_PATH ${NATIVE_PATH}/Samples/OpenGL/Shaders/Standard)
+set(FRAMEWORK_SHADER_PATH ${NATIVE_PATH}/Framework/src/Rendering/OpenGL/Shaders/Standard)
 set(MOTIONSYNC_CORE_DIR MotionSyncCore)
 set(MOTIONSYNC_CRI_LIB_PATH ${SDK_ROOT_PATH}/Core/CRI/dll/macOS)
 
@@ -89,7 +90,7 @@ target_compile_definitions(MotionSyncFramework PRIVATE MOTIONSYNC_CORE_CRI_LIB_P
 find_package(OpenGL REQUIRED)
 
 # Find libraries.
-find_library(AUDIOTOOLBOX_LIBRARY AudioToolBox)
+find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
 
 # Make executable app.
 add_executable(${APP_NAME})
@@ -112,5 +113,6 @@ add_custom_command(
   POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/Resources
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${SAMPLE_SHADER_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/SampleShaders
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${FRAMEWORK_SHADER_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/FrameworkShaders
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${MOTIONSYNC_CRI_LIB_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/${MOTIONSYNC_CORE_DIR}
 )

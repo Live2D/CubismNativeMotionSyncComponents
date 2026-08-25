@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [5-r.2.1] - 2026-08-25
+
+### Added
+
+* Add motion play sample.
+  * This is a sample that allows motion sync to function with the settings and audio linked to `.model3.json` in accordance with the playback of the motion.
+* Add a function retrieve the audio linked to the motion from `.model3.json`.
+* Add a function retrieve the motion sync setting linked to the motion from `.model3.json`.
+
+### Changed
+
+* Update supported Cubism SDK to `Cubism 5 SDK for Native R4_1`.
+  * Replace some functions and variables with those defined in `Common` of `Cubism SDK for Native Samples`.
+  * Support implementation that uses shader files for `Framework` of `Cubism SDK for Native`.
+  * Align various gradle settings in Android samples.
+* Implement support for Android 16KB page size.
+
+### Fixed
+
+* Fix an issue where the `AudioToolbox` name specified in CMake's `find_library()` was incorrect.
+* Fix an issue where references to `Cubism SDK for Native Framework` shaders could be broken in the macOS sample.
+
+
 ## [5-r.2] - 2025-03-27
 
 ### Changed
@@ -94,6 +117,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * New released!
 
 
+[5-r.2.1]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.2...5-r.2.1
 [5-r.2]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1...5-r.2
 [5-r.1]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1-beta.2...5-r.1
 [5-r.1-beta.2]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1-beta.1...5-r.1-beta.2

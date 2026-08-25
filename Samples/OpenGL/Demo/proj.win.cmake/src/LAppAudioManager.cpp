@@ -7,7 +7,7 @@
 
 #include "LAppAudioManager.hpp"
 #include <dsound.h>
-#include "LAppWavFileHandler.hpp"
+#include "LAppWavFileHandler_Common.hpp"
 #include "LAppPal.hpp"
 
 #pragma comment(lib, "dsound.lib")
@@ -222,11 +222,11 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
 
     HRESULT result;
     LPWAVEFORMATEX waveFormat;
-    LAppWavFileHandler wavHandler;
+    LAppWavFileHandler_Common wavHandler;
 
     // WAVファイルをロード
     wavHandler.Start(path);
-    LAppWavFileHandler::WavFileInfo wavHandlerInfo = wavHandler.GetWavFileInfo();
+    LAppWavFileHandler_Common::WavFileInfo wavHandlerInfo = wavHandler.GetWavFileInfo();
 
     // ヘッダメモリ確保と情報設定
     waveFormat = reinterpret_cast<LPWAVEFORMATEX>(CSM_MALLOC(sizeof(WAVEFORMATEX)));
@@ -427,7 +427,7 @@ csmBool LAppAudioManager::UpdateForMicrophone()
         // 指定したチャンネルのみ格納
         if ((i / byte) % _channels == _useChannel)
         {
-            _buffer.AddValue(LAppWavFileHandler::NormalizePcmSample(_bitDepth, &reinterpret_cast<csmByte*>(inputSoundBuffer1)[i], inputSoundBufferSize1 - i));
+            _buffer.AddValue(LAppWavFileHandler_Common::NormalizePcmSample(_bitDepth, &reinterpret_cast<csmByte*>(inputSoundBuffer1)[i], inputSoundBufferSize1 - i));
         }
     }
     for (DWORD i = 0; i < inputSoundBufferSize2; i += byte)
@@ -435,7 +435,7 @@ csmBool LAppAudioManager::UpdateForMicrophone()
         // 指定したチャンネルのみ格納
         if ((i / byte) % _channels == _useChannel)
         {
-            _buffer.AddValue(LAppWavFileHandler::NormalizePcmSample(_bitDepth, &reinterpret_cast<csmByte*>(inputSoundBuffer2)[i], inputSoundBufferSize2 - i));
+            _buffer.AddValue(LAppWavFileHandler_Common::NormalizePcmSample(_bitDepth, &reinterpret_cast<csmByte*>(inputSoundBuffer2)[i], inputSoundBufferSize2 - i));
         }
     }
 
@@ -516,7 +516,7 @@ csmBool LAppAudioManager::UpdateForAudioFile()
     }
     else if (_writePosition == WritePosition_Front && playCursor < bufferBytes)
     {
-	    // 後半書き込み
+        // 後半書き込み
         _writePosition = WritePosition_Back;
         result = _secondary->Lock(bufferBytes, bufferBytes, &soundBuffer1, &soundBufferSize1, &soundBuffer2, &soundBufferSize2, 0);
         if (FAILED(result))

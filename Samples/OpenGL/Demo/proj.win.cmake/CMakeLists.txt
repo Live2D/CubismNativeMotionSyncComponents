@@ -33,6 +33,7 @@ set(GLEW_PATH ${THIRD_PARTY_PATH}/glew)
 set(GLFW_PATH ${THIRD_PARTY_PATH}/glfw)
 set(RES_PATH ${SDK_ROOT_PATH}/Samples/Resources)
 set(SAMPLE_SHADER_PATH ${NATIVE_PATH}/Samples/OpenGL/Shaders/Standard)
+set(FRAMEWORK_SHADER_PATH ${NATIVE_PATH}/Framework/src/Rendering/OpenGL/Shaders/Standard)
 set(MOTIONSYNC_CORE_DIR MotionSyncCore)
 
 # Set project.
@@ -159,6 +160,7 @@ add_custom_command(
   POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/Resources
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${SAMPLE_SHADER_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/SampleShaders
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${FRAMEWORK_SHADER_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/FrameworkShaders
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${MOTIONSYNC_CRI_LIB_PATH} $<TARGET_FILE_DIR:${APP_NAME}>/${MOTIONSYNC_CORE_DIR}
 )
 

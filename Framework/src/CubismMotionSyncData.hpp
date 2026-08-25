@@ -158,6 +158,15 @@ public:
     csmVector<CubismMotionSyncEngineMappingInfo> GetMappingInfo(const csmInt32 index);
 
     /**
+     * @brief _settingListのサイズを取得
+     *
+     * _settingListのサイズを取得
+     *
+     * @return  _settingListのサイズ
+     */
+    csmUint32 GetSettingListSize();
+
+    /**
      * @brief デストラクタ
      *
      * デストラクタ。

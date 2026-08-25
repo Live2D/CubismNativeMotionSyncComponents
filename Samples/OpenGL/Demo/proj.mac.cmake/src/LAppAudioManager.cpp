@@ -6,7 +6,7 @@
  */
 
 #include "LAppAudioManager.hpp"
-#include "LAppWavFileHandler.hpp"
+#include "LAppWavFileHandler_Common.hpp"
 #include "LAppPal.hpp"
 
 using namespace Csm;
@@ -22,9 +22,9 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     OSStatus status;
      
     // WAVファイルをロード
-    LAppWavFileHandler wavHandler;
+    LAppWavFileHandler_Common wavHandler;
     wavHandler.Start(path);
-    LAppWavFileHandler::WavFileInfo wavHandlerInfo = wavHandler.GetWavFileInfo();
+    LAppWavFileHandler_Common::WavFileInfo wavHandlerInfo = wavHandler.GetWavFileInfo();
     _wavSamples = wavHandler.GetPcmData();
     
     // リングバッファ確保

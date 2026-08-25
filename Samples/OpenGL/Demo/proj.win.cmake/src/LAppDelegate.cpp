@@ -249,6 +249,8 @@ void LAppDelegate::InitializeCubism()
     //setup cubism
     _cubismOption.LogFunction = LAppPal::PrintMessage;
     _cubismOption.LoggingLevel = Csm::CubismFramework::Option::LogLevel_Verbose;
+    _cubismOption.LoadFileFunction = LAppPal::LoadFileAsBytes;
+    _cubismOption.ReleaseBytesFunction = LAppPal::ReleaseBytes;
     Csm::CubismFramework::StartUp(&_cubismAllocator, &_cubismOption);
 
     //Initialize cubism

@@ -12,7 +12,7 @@
 #include "LAppDelegate.hpp"
 #include "LAppDefine.hpp"
 #include "LAppTextureManager.hpp"
-#include "TouchManager.hpp"
+#include "TouchManager_Common.hpp"
 #include "LAppSprite.hpp"
 #include "LAppMotionSyncModel.hpp"
 #include "LAppMotionSyncDefine.hpp"

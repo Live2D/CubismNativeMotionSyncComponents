@@ -9,15 +9,16 @@ This folder contains header files and platform-specific library files for develo
 
 | Platform | Architecture | dll | lib | Path | Note |
 | --- | --- | --- | --- | --- | --- |
-| Android | ARM64 | ✓ |   | Android/arm64-v8a |   |
-| Android | x86 | ✓ |   | Android/x86 |   |
-| Android | x86_64 | ✓ |   | Android/x86_64 |   |
-| iOS | ARM64 |   | ✓ | iOS/xxx-iphoneos | iOS Devices |
-| iOS | x86_64 |   | ✓ | iOS/xxx-iphonesimulator | iOS Simulator |
-| macOS | ARM64 | ✓ |   | macOS |   |
-| macOS | x86_64 | ✓ |   | macOS |   |
-| Windows | x86 | ✓ |   | Windows/x86 |   |
-| Windows | x86_64 | ✓ |   | Windows/x86_64 |   |
+| Android | ARM64 | ✓ |   | CRI/dll/Android/arm64-v8a |   |
+| Android | x86 | ✓ |   | CRI/dll/Android/x86 |   |
+| Android | x86_64 | ✓ |   | CRI/dll/Android/x86_64 |   |
+| iOS | ARM64 |   | ✓ | CRI/lib/iOS/Release-iphoneos | iOS Devices |
+| iOS | ARM64 |   | ✓ | CRI/lib/iOS/Release-iphonesimulator | iOS Simulator |
+| iOS | x86_64 |   | ✓ | CRI/lib/iOS/Release-iphonesimulator | iOS Simulator |
+| macOS | ARM64 | ✓ |   | CRI/dll/macOS |   |
+| macOS | x86_64 | ✓ |   | CRI/dll/macOS |   |
+| Windows | x86 | ✓ |   | CRI/dll/Windows/x86 |   |
+| Windows | x86_64 | ✓ |   | CRI/dll/Windows/x86_64 |   |
 
 
 ### Calling convention

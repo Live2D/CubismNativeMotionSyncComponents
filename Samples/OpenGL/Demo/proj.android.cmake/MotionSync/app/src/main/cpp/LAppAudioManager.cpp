@@ -6,7 +6,7 @@
  */
 
 #include "LAppAudioManager.hpp"
-#include "LAppWavFileHandler.hpp"
+#include "LAppWavFileHandler_Common.hpp"
 #include "JniBridgeC.hpp"
 #include "LAppPal.hpp"
 
@@ -19,9 +19,9 @@ csmBool LAppAudioManager::LoadFile(csmString path, csmUint32 useChannel)
     _isLoadFile = true;
 
     // WAVファイルをロード
-    LAppWavFileHandler wavHandler;
+    LAppWavFileHandler_Common wavHandler;
     wavHandler.Start(path);
-    LAppWavFileHandler::WavFileInfo wavHandlerInfo = wavHandler.GetWavFileInfo();
+    LAppWavFileHandler_Common::WavFileInfo wavHandlerInfo = wavHandler.GetWavFileInfo();
     csmInt32 channels = wavHandlerInfo._numberOfChannels;
 
     // リングバッファ確保
@@ -221,7 +221,7 @@ csmBool LAppAudioManager::UpdateForMicrophone()
         // 指定したチャンネルのみ格納
         if ((i / byte) % _channels == _useChannel)
         {
-            _buffer.AddValue(LAppWavFileHandler::NormalizePcmSample(_bitDepth, &data[i], dataSize - i));
+            _buffer.AddValue(LAppWavFileHandler_Common::NormalizePcmSample(_bitDepth, &data[i], dataSize - i));
         }
     }
 

@@ -49,6 +49,21 @@ android {
     }
 
     flavorDimensions = ["mode"]
+    productFlavors {
+        Default {
+            dimension = "mode"
+            applicationId 'com.live2d.demo.default'
+        }
+        Motion {
+            dimension 'mode'
+            applicationId 'com.live2d.demo.motion'
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DCSM_MOTION_DEMO=ON"
+                }
+            }
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -69,7 +84,14 @@ android {
     sourceSets.main {
         assets.srcDir "../../../../../Resources"
         assets.srcDir "${nativeDir}/Samples/OpenGL/Shaders/StandardES"
+        assets.srcDir "${nativeDir}/Framework/src/Rendering/OpenGL/Shaders/StandardES"
         jniLibs.srcDirs "../../../../../../Core/CRI/dll/Android"
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 

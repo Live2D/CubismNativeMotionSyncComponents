@@ -37,8 +37,13 @@ set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE "NO")
 # Detect platform.
 if(PLATFORM STREQUAL "OS64")
   set(PLATFORM_NAME iphoneos)
+  set(MOTIONSYNC_PLATFORM_NAME iphoneos)
+elseif(PLATFORM STREQUAL "SIMULATORARM64")
+  set(PLATFORM_NAME iphonesimulator-arm64)
+  set(MOTIONSYNC_PLATFORM_NAME iphonesimulator)
 elseif(PLATFORM STREQUAL "SIMULATOR64")
-  set(PLATFORM_NAME iphonesimulator)
+  set(PLATFORM_NAME iphonesimulator-x86_64)
+  set(MOTIONSYNC_PLATFORM_NAME iphonesimulator)
 else()
   message(FATAL_ERROR "Invalid PLATFORM ${PLATFORM_NAME}.")
 endif()
@@ -63,7 +68,7 @@ add_library(Live2DCubismMotionSyncCriCore STATIC IMPORTED)
 set_target_properties(Live2DCubismMotionSyncCriCore
   PROPERTIES
     IMPORTED_LOCATION
-      ${MOTIONSYNC_CRI_LIB_PATH}/lib/iOS/Release-${PLATFORM_NAME}/libLive2DCubismMotionSyncEngine_CRI.a
+      ${MOTIONSYNC_CRI_LIB_PATH}/lib/iOS/Release-${MOTIONSYNC_PLATFORM_NAME}/libLive2DCubismMotionSyncEngine_CRI.a
     INTERFACE_INCLUDE_DIRECTORIES ${MOTIONSYNC_CORE_PATH}/include
 )
 
@@ -145,4 +150,3 @@ if(PLATFORM STREQUAL "OS64")
 elseif(PLATFORM STREQUAL "SIMULATOR64")
   set_xcode_property(${APP_NAME} ARCHS "x86_64" "All")
 endif()
-

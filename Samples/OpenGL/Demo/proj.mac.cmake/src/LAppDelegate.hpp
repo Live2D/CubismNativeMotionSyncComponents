@@ -89,7 +89,17 @@ public:
     void AppEnd() { _isEnd = true; }
 
     LAppTextureManager* GetTextureManager() { return _textureManager; }
-    
+
+    /**
+    * @brief   ウインドウの幅を取得する。
+    */
+    int GetWindowWidth() { return _windowWidth; }
+
+    /**
+    * @brief   ウインドウの高さを取得する。
+    */
+    int GetWindowHeight() { return _windowHeight; }
+
     /**
      * @brief   実行中のプログラムファイルパスを取得する。
      */

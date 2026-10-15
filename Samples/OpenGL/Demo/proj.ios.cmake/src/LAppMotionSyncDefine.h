@@ -27,4 +27,6 @@ namespace LAppMotionSyncDefine {
     extern const csmInt32 Channels; ///< チャンネル数
     extern const csmInt32 SamplesPerSec; ///< サンプリング周波数
     extern const csmInt32 BitDepth; ///< ビット深度
+    extern const csmUint32 MicrophoneBacklogLimitBlocks; ///< マイク入力の読み出し前に許容するブロック数
+    extern const csmUint32 MicrophoneBacklogTargetBlocks; ///< 上限超過時に残すブロック数
 }

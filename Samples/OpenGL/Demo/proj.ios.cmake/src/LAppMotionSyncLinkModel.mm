@@ -8,11 +8,15 @@
 #import "LAppMotionSyncLinkModel.h"
 #import "CubismModelMotionSyncSettingJson.hpp"
 #import "LAppDefine.h"
-#import "AppMotionSyncLinkDelegate.h"
+#import "SceneDelegate.h"
 #import "LAppMotionSyncDefine.h"
 #import "LAppMotionEventDefine.h"
 #import "LAppPal.h"
 #import "LAppTextureManager.h"
+#import "ViewController.h"
+#import "Motion/CubismPhysicsUpdater.hpp"
+#import "CubismMotionSyncUpdater.hpp"
+#import "Motion/CubismPoseUpdater.hpp"
 #import "Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp"
 #import <Utils/CubismString.hpp>
 #import <cstring>
@@ -91,12 +95,48 @@ void LAppMotionSyncLinkModel::LoadAssets(const csmString fileName)
         return;
     }
 
-    CreateRenderer();
+    SceneDelegate *sceneDelegate = [SceneDelegate sharedSceneDelegate];
+    ViewController *view = sceneDelegate.viewController;
+
+    int width = [view GetWindowWidth];
+    int height = [view GetWindowHeight];
+    CreateRenderer(width, height);
     SetupTextures();
 }
 
 void LAppMotionSyncLinkModel::Update()
 {
+    SceneDelegate *sceneDelegate = [SceneDelegate sharedSceneDelegate];
+    ViewController *view = sceneDelegate.viewController;
+
+    int width = [view GetWindowWidth];
+    int height = [view GetWindowHeight];
+
+    if (width == 0 || height == 0)
+    {
+        return;
+    }
+
+    float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    float displayRatio = static_cast<float>(height) / static_cast<float>(width);
+    float canvasRatio = _model->GetCanvasHeight() / _model->GetCanvasWidth();
+
+    Csm::CubismMatrix44 projection;
+    projection.LoadIdentity();
+
+    if (canvasRatio < displayRatio)
+    {
+        // 横に長いモデルを縦長ウィンドウに表示する際モデルの横サイズでscaleを算出する
+        GetModelMatrix()->SetWidth(2.0f);
+        projection.Scale(1.0f, aspectRatio);
+    }
+    else
+    {
+        // 縦長モデルを高さに合わせて横方向のスケールを調整
+        GetModelMatrix()->SetHeight(2.0f);
+        projection.Scale(1.0f / aspectRatio, 1.0f);
+    }
+
     const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
     _userTimeSeconds += deltaTimeSeconds;
 
@@ -106,39 +146,9 @@ void LAppMotionSyncLinkModel::Update()
 
     _opacity = _model->GetModelOpacity();
 
-    if (_physics != NULL)
-    {
-        _physics->Evaluate(_model, deltaTimeSeconds);
-    }
-
-    if (_pose != NULL)
-    {
-        _pose->UpdateParameters(_model, deltaTimeSeconds);
-    }
-
-    if (_motionSync != NULL)
-    {
-        _motionSync->UpdateParameters(_model, deltaTimeSeconds);
-    }
+    _updateScheduler.OnLateUpdate(_model, deltaTimeSeconds);
 
     _model->Update();
-
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    int width = screenRect.size.width;
-    int height = screenRect.size.height;
-
-    Csm::CubismMatrix44 projection;
-    projection.LoadIdentity();
-
-    if (_model->GetCanvasWidth() > 1.0f && width < height)
-    {
-        GetModelMatrix()->SetWidth(2.0f);
-        projection.Scale(1.0f, static_cast<float>(width) / static_cast<float>(height));
-    }
-    else
-    {
-        projection.Scale(static_cast<float>(height) / static_cast<float>(width), 1.0f);
-    }
 
     Draw(projection);
 }
@@ -158,6 +168,25 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
     Csm::csmInt32 priority, Csm::ACubismMotion::FinishedMotionCallback onFinishedMotionHandler,
     Csm::ACubismMotion::BeganMotionCallback onBeganMotionHandler)
 {
+    if (_motionSync == NULL)
+    {
+        LAppPal::PrintLogLn("[APP]MotionSync is not initialized.");
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
+    const csmString fileName = _modelSetting->GetMotionFileName(group, no);
+    if (!_motionSyncSettingMap.IsExist(fileName))
+    {
+        LAppPal::PrintLogLn("[APP]MotionSync setting not found: [%s_%d] %s", group, no, fileName.GetRawString());
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
+    if (!_soundFileMap.IsExist(fileName))
+    {
+        LAppPal::PrintLogLn("[APP]Sound file not found: [%s_%d] %s", group, no, fileName.GetRawString());
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
     if (priority == LAppDefine::PriorityForce)
     {
         _motionManager->SetReservePriority(priority);
@@ -171,7 +200,6 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
         return InvalidMotionQueueEntryHandleValue;
     }
 
-    const csmString fileName = _modelSetting->GetMotionFileName(group, no);
     csmString name = Utils::CubismString::GetFormatedString("%s_%d", group, no);
     CubismMotion* motion = static_cast<CubismMotion*>(_motions[name.GetRawString()]);
     csmBool autoDelete = false;
@@ -207,12 +235,6 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
     {
         motion->SetBeganMotionHandler(onBeganMotionHandler);
         motion->SetFinishedMotionHandler(onFinishedMotionHandler);
-    }
-
-    if (!_motionSync || !_motionSyncSettingMap.IsExist(fileName) || !_soundFileMap.IsExist(fileName))
-    {
-        LAppPal::PrintLogLn("[APP]No exist: %s", fileName.GetRawString());
-        return InvalidMotionQueueEntryHandleValue;
     }
 
     csmString useMotionSyncSettingName = _motionSyncSettingMap[fileName];
@@ -337,6 +359,11 @@ void LAppMotionSyncLinkModel::SetupModel()
         buffer = CreateBuffer(path.GetRawString(), &size);
         LoadPhysics(buffer, size);
         DeleteBuffer(buffer, path.GetRawString());
+
+        if (_physics != nullptr)
+        {
+            _updateScheduler.AddUpdatableList(CSM_NEW CubismPhysicsUpdater(*_physics));
+        }
     }
 
     if (strcmp(_modelSetting->GetPoseFileName(), "") != 0)
@@ -346,6 +373,11 @@ void LAppMotionSyncLinkModel::SetupModel()
         buffer = CreateBuffer(path.GetRawString(), &size);
         LoadPose(buffer, size);
         DeleteBuffer(buffer, path.GetRawString());
+
+        if (_pose != nullptr)
+        {
+            _updateScheduler.AddUpdatableList(CSM_NEW CubismPoseUpdater(*_pose));
+        }
     }
 
     csmMap<csmString, csmFloat32> layout;
@@ -376,7 +408,7 @@ void LAppMotionSyncLinkModel::SetupModel()
 
         _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec);
 
-        if (!_motionSync)
+        if (_motionSync == nullptr)
         {
             LAppPal::PrintLogLn("Failed to SetupModel().");
             return;
@@ -384,10 +416,14 @@ void LAppMotionSyncLinkModel::SetupModel()
 
         DeleteBuffer(buffer, path.GetRawString());
 
+        _updateScheduler.AddUpdatableList(CSM_NEW CubismMotionSyncUpdater(*_motionSync));
+
         _modelSetting->GetMotionSyncLinkSettingMap(_motionSyncSettingMap);
         _modelSetting->GetMotionSyncLinkAudioMap(_soundFileMap);
         _motionIndex = -1;
     }
+
+    _updateScheduler.SortUpdatableList();
 
     _updating = false;
     _initialized = true;
@@ -404,7 +440,7 @@ void LAppMotionSyncLinkModel::SetupTextures()
 
         csmString texturePath = _modelHomeDir + _modelSetting->GetTextureFileName(modelTextureNumber);
 
-        AppMotionSyncLinkDelegate *delegate = (AppMotionSyncLinkDelegate *)[[UIApplication sharedApplication] delegate];
+        SceneDelegate *delegate = [SceneDelegate sharedSceneDelegate];
         TextureInfo* texture = [[delegate getTextureManager] createTextureFromPngFile:texturePath.GetRawString()];
         csmInt32 glTextueNumber = texture->id;
 

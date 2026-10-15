@@ -8,14 +8,15 @@
 #pragma once
 
 #import "Motion/ACubismMotion.hpp"
-#import "AppMotionSyncLinkDelegate.h"
-#import "MotionViewController.h"
+#import "SceneDelegate.h"
+#import "ViewController.h"
 
 namespace LAppCubismMotionEventDefine {
     static inline void OnFinishedMotion(Csm::ACubismMotion* self)
     {
-        AppMotionSyncLinkDelegate* delegate = (AppMotionSyncLinkDelegate*)[[UIApplication sharedApplication] delegate];
-        LAppMotionSyncLinkModel* model = [delegate.viewController getCurrentModel];
+        SceneDelegate *sceneDelegate = [SceneDelegate sharedSceneDelegate];
+        ViewController *viewController = sceneDelegate.viewController;
+        LAppMotionSyncLinkModel* model = [viewController getCurrentModel];
 
         if (model)
         {

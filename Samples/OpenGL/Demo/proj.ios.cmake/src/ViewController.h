@@ -8,9 +8,15 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 
-#include <Rendering/OpenGL/CubismOffscreenSurface_OpenGLES2.hpp>
+#include <Type/csmVector.hpp>
+#include <Type/csmString.hpp>
+#include <Rendering/OpenGL/CubismRenderTarget_OpenGLES2.hpp>
 
 @interface ViewController : GLKViewController <GLKViewDelegate>
+
+#ifdef CSM_MOTIONSYNC_MOTION_DEMO
+class LAppMotionSyncLinkModel;
+#endif
 
 @property (nonatomic, assign) bool mOpenGLRun;
 @property (nonatomic) GLuint vertexBufferId;
@@ -53,5 +59,34 @@
  *
  */
 - (void)ChangeNextModel;
+
+/**
+ * @brief   ウインドウの幅を取得する。
+ */
+- (int)GetWindowWidth;
+
+/**
+ * @brief   ウインドウの高さを取得する。
+ */
+- (int)GetWindowHeight;
+
+/**
+ * @brief 画面初期化処理。
+ *
+ * viewDidLoad から1回だけ呼び出す。
+ * UIWindowScene 経由でセーフエリアを取得するため、レイアウト確定前でも有効値が得られる。
+ */
+- (void)initializeScreen;
+
+/**
+ * @brief 画面リサイズ処理。
+ *
+ * viewDidLayoutSubviews から呼び出され、レイアウト確定後・回転・SplitView 等に追従する。
+ */
+- (void)resizeScreen;
+
+#ifdef CSM_MOTIONSYNC_MOTION_DEMO
+- (LAppMotionSyncLinkModel*)getCurrentModel;
+#endif
 
 @end

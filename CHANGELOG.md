@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [5-r.3] - 2026-10-15
+
+### Added
+
+* Add `CubismMotionSyncUpdater` class to support the functionality to change motion calculation order in `Cubism SDK for Native`.
+* Add support for rendering portrait and landscape displays on Android.
+
+### Changed
+
+* Replacing the `strcopy()` Function with the `memcopy()` Function for `Framework` of `Cubism SDK for Native`.
+* Update supported Cubism SDK to `Cubism 5 SDK for Native R5`.
+  * Follow the argument change of `CubismUserModel::CreateRenderer()` which now takes width and height.
+  * Replace the removed header `CubismOffscreenSurface_OpenGLES2.hpp` with `CubismRenderTarget_OpenGLES2.hpp` in Android and iOS samples.
+  * Add explicit includes of `csmVector.hpp` and `csmString.hpp` to align with the `Framework` header cleanup.
+* Change motion calculation order updates to be performed by `CubismUpdateScheduler`.
+
+### Fixed
+
+* Fix background image distortion when window size is changed.
+* Fix an issue where queued microphone input could cause persistent audio delay in the macOS and iOS samples.
+* Fix issues in the motion play sample where an early return could prevent motions with the same or lower priority from starting and cause a memory leak.
+
+
 ## [5-r.2.1] - 2026-08-25
 
 ### Added
@@ -117,6 +140,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * New released!
 
 
+[5-r.3]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.2.1...5-r.3
 [5-r.2.1]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.2...5-r.2.1
 [5-r.2]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1...5-r.2
 [5-r.1]: https://github.com/Live2D/CubismNativeMotionSyncComponents/compare/5-r.1-beta.2...5-r.1

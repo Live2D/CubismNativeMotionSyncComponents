@@ -178,6 +178,8 @@ void LAppDelegate::Run()
         {
             // スプライトサイズを再設定
             ResizeSprite();
+            // オフスクリーンのサイズ変更
+            _userModel->SetRenderTargetSize(width, height);
             // サイズを保存しておく
             _windowWidth = width;
             _windowHeight = height;
@@ -490,8 +492,9 @@ void LAppDelegate::ResizeSprite()
         {
             x = width * 0.5f;
             y = height * 0.5f;
-            fWidth = static_cast<float>(texInfo->width * 2);
             fHeight = static_cast<float>(height) * 0.95f;
+            float ratio = fHeight / static_cast<float>(texInfo->height);
+            fWidth = static_cast<float>(texInfo->width) * ratio;
             _back->ResetRect(x, y, fWidth, fHeight);
         }
     }

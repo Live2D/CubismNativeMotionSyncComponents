@@ -14,6 +14,9 @@
 #include "LAppTextureManager.hpp"
 #include "Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp"
 #include "LAppMotionEventDefine.hpp"
+#include "Motion/CubismPhysicsUpdater.hpp"
+#include "CubismMotionSyncUpdater.hpp"
+#include "Motion/CubismPoseUpdater.hpp"
 #include <Utils/CubismString.hpp>
 #include <cstring>
 
@@ -90,7 +93,7 @@ void LAppMotionSyncLinkModel::LoadAssets(const csmString fileName)
         return;
     }
 
-    CreateRenderer();
+    CreateRenderer(LAppMotionSyncLinkDelegate::GetInstance()->GetWindowWidth(), LAppMotionSyncLinkDelegate::GetInstance()->GetWindowHeight());
 
     // テクスチャのセットアップ
     SetupTextures();
@@ -111,22 +114,7 @@ void LAppMotionSyncLinkModel::Update()
     // 不透明度
     _opacity = _model->GetModelOpacity();
 
-    // 物理演算の設定
-    if (_physics != NULL)
-    {
-        _physics->Evaluate(_model, deltaTimeSeconds);
-    }
-
-    // ポーズの設定
-    if (_pose != NULL)
-    {
-        _pose->UpdateParameters(_model, deltaTimeSeconds);
-    }
-
-    if (_motionSync != NULL)
-    {
-        _motionSync->UpdateParameters(_model, deltaTimeSeconds);
-    }
+    _updateScheduler.OnLateUpdate(_model, deltaTimeSeconds);
 
     _model->Update();
 
@@ -168,6 +156,25 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
     Csm::csmInt32 priority, Csm::ACubismMotion::FinishedMotionCallback onFinishedMotionHandler,
     Csm::ACubismMotion::BeganMotionCallback onBeganMotionHandler)
 {
+    if (_motionSync == NULL)
+    {
+        LAppPal::PrintLogLn("[APP]MotionSync is not initialized.");
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
+    const csmString fileName = _modelSetting->GetMotionFileName(group, no);
+    if (!_motionSyncSettingMap.IsExist(fileName))
+    {
+        LAppPal::PrintLogLn("[APP]MotionSync setting not found: [%s_%d] %s", group, no, fileName.GetRawString());
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
+    if (!_soundFileMap.IsExist(fileName))
+    {
+        LAppPal::PrintLogLn("[APP]Sound file not found: [%s_%d] %s", group, no, fileName.GetRawString());
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
     if (priority == LAppDefine::PriorityForce)
     {
         _motionManager->SetReservePriority(priority);
@@ -180,8 +187,6 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
         }
         return InvalidMotionQueueEntryHandleValue;
     }
-
-    const csmString fileName = _modelSetting->GetMotionFileName(group, no);
 
     //ex) idle_0
     csmString name = Utils::CubismString::GetFormatedString("%s_%d", group, no);
@@ -220,12 +225,6 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
     {
         motion->SetBeganMotionHandler(onBeganMotionHandler);
         motion->SetFinishedMotionHandler(onFinishedMotionHandler);
-    }
-
-    if (!_motionSyncSettingMap.IsExist(fileName) || !_soundFileMap.IsExist(fileName))
-    {
-        LAppPal::PrintLogLn("[APP]No exist: %s", fileName.GetRawString());
-        return InvalidMotionQueueEntryHandleValue;
     }
 
     // MotionSync
@@ -362,6 +361,11 @@ void LAppMotionSyncLinkModel::SetupModel()
         buffer = CreateBuffer(path.GetRawString(), &size);
         LoadPhysics(buffer, size);
         DeleteBuffer(buffer, path.GetRawString());
+
+        if (_physics != nullptr)
+        {
+            _updateScheduler.AddUpdatableList(CSM_NEW CubismPhysicsUpdater(*_physics));
+        }
     }
 
     // Pose
@@ -373,6 +377,11 @@ void LAppMotionSyncLinkModel::SetupModel()
         buffer = CreateBuffer(path.GetRawString(), &size);
         LoadPose(buffer, size);
         DeleteBuffer(buffer, path.GetRawString());
+
+        if (_pose != nullptr)
+        {
+            _updateScheduler.AddUpdatableList(CSM_NEW CubismPoseUpdater(*_pose));
+        }
     }
 
     // Layout
@@ -407,7 +416,7 @@ void LAppMotionSyncLinkModel::SetupModel()
 
         _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec, _executeAbsolutePath);
 
-        if (!_motionSync)
+        if (_motionSync == nullptr)
         {
             LAppPal::PrintLogLn("Failed to SetupModel().");
             return;
@@ -415,11 +424,15 @@ void LAppMotionSyncLinkModel::SetupModel()
 
         DeleteBuffer(buffer, path.GetRawString());
 
+        _updateScheduler.AddUpdatableList(CSM_NEW CubismMotionSyncUpdater(*_motionSync));
+
         // モーション名とそれに紐づくデータを保存
         _modelSetting->GetMotionSyncLinkSettingMap(_motionSyncSettingMap);
         _modelSetting->GetMotionSyncLinkAudioMap(_soundFileMap);
         _motionIndex = -1;
     }
+
+    _updateScheduler.SortUpdatableList();
 
     _updating = false;
     _initialized = true;

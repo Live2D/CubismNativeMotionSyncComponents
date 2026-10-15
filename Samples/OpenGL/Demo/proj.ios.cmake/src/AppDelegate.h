@@ -7,14 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class ViewController;
-@class LAppTextureManager;
-
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
-
-@property (strong, nonatomic) UIWindow *window;
-@property (strong, nonatomic) ViewController *viewController;
-@property (nonatomic, readonly, getter=getTextureManager) LAppTextureManager *textureManager; // テクスチャマネージャー
 
 /**
  * @brief   Cubism SDK の初期化
@@ -27,9 +20,13 @@
 - (bool)getIsEnd;
 
 /**
+ * @brief   アプリケーションのリソースを解放する。
+ */
+- (void)releaseApplicationResources;
+
+/**
  * @brief   アプリケーションを終了する。
  */
 - (void)finishApplication;
 
 @end
-

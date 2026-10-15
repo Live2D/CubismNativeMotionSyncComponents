@@ -15,6 +15,9 @@
 #include "LAppTextureManager.hpp"
 #include "Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp"
 #include "LAppMotionEventDefine.hpp"
+#include "Motion/CubismPhysicsUpdater.hpp"
+#include "CubismMotionSyncUpdater.hpp"
+#include "Motion/CubismPoseUpdater.hpp"
 #include "Utils/CubismString.hpp"
 
 using namespace Csm;
@@ -93,7 +96,7 @@ void LAppMotionSyncLinkModel::LoadAssets(const csmString fileName)
         return;
     }
 
-    CreateRenderer();
+    CreateRenderer(LAppMotionSyncLinkDelegate::GetInstance()->GetWindowWidth(), LAppMotionSyncLinkDelegate::GetInstance()->GetWindowHeight());
 
     // テクスチャのセットアップ
     SetupTextures();
@@ -122,42 +125,32 @@ void LAppMotionSyncLinkModel::Update()
     // 不透明度
     _opacity = _model->GetModelOpacity();
 
-    // 物理演算の設定
-    if (_physics != NULL)
-    {
-      _physics->Evaluate(_model, deltaTimeSeconds);
-    }
-
-    // ポーズの設定
-    if (_pose != NULL)
-    {
-      _pose->UpdateParameters(_model, deltaTimeSeconds);
-    }
-
-    if (_motionSync != NULL)
-    {
-      _motionSync->UpdateParameters(_model, deltaTimeSeconds);
-    }
+    _updateScheduler.OnLateUpdate(_model, deltaTimeSeconds);
 
     _model->Update();
 
     // ウィンドウサイズを取得
     int width = LAppMotionSyncLinkDelegate::GetInstance()->GetWindowWidth();
     int height = LAppMotionSyncLinkDelegate::GetInstance()->GetWindowHeight();
+    float displayRatio = static_cast<float>(height) / static_cast<float>(width);
+    float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    float canvasRatio = _model->GetCanvasHeight() / _model->GetCanvasWidth();
 
     Csm::CubismMatrix44 projection;
     // 念のため単位行列に初期化
     projection.LoadIdentity();
 
-    if (_model->GetCanvasWidth() > 1.0f && width < height)
+    if (canvasRatio < displayRatio)
     {
-        // 横に長いモデルを縦長ウィンドウに表示する際モデルの横サイズでscaleを算出する
+        // 横長モデルを幅に合わせて縦方向のスケールを調整
         GetModelMatrix()->SetWidth(2.0f);
-        projection.Scale(1.0f, static_cast<float>(width) / static_cast<float>(height));
+        projection.Scale(1.0f, aspectRatio);
     }
     else
     {
-        projection.Scale(static_cast<float>(height) / static_cast<float>(width), 1.0f);
+        // 縦長モデルを高さに合わせて横方向のスケールを調整
+        GetModelMatrix()->SetHeight(2.0f);
+        projection.Scale(1.0f / aspectRatio, 1.0f);
     }
 
     // モデルの描画を更新
@@ -179,6 +172,25 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
     Csm::csmInt32 priority, Csm::ACubismMotion::FinishedMotionCallback onFinishedMotionHandler,
     Csm::ACubismMotion::BeganMotionCallback onBeganMotionHandler)
 {
+    if (_motionSync == NULL)
+    {
+        LAppPal::PrintLogLn("[APP]MotionSync is not initialized.");
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
+    const csmString fileName = _modelSetting->GetMotionFileName(group, no);
+    if (!_motionSyncSettingMap.IsExist(fileName))
+    {
+        LAppPal::PrintLogLn("[APP]MotionSync setting not found: [%s_%d] %s", group, no, fileName.GetRawString());
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
+    if (!_soundFileMap.IsExist(fileName))
+    {
+        LAppPal::PrintLogLn("[APP]Sound file not found: [%s_%d] %s", group, no, fileName.GetRawString());
+        return InvalidMotionQueueEntryHandleValue;
+    }
+
     if (priority == LAppDefine::PriorityForce)
     {
         _motionManager->SetReservePriority(priority);
@@ -191,8 +203,6 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
         }
         return InvalidMotionQueueEntryHandleValue;
     }
-
-    const csmString fileName = _modelSetting->GetMotionFileName(group, no);
 
     //ex) idle_0
     csmString name = Utils::CubismString::GetFormatedString("%s_%d", group, no);
@@ -231,12 +241,6 @@ Csm::CubismMotionQueueEntryHandle LAppMotionSyncLinkModel::StartMotion(const Csm
     {
         motion->SetBeganMotionHandler(onBeganMotionHandler);
         motion->SetFinishedMotionHandler(onFinishedMotionHandler);
-    }
-
-    if (!_motionSyncSettingMap.IsExist(fileName) || !_soundFileMap.IsExist(fileName))
-    {
-        LAppPal::PrintLogLn("[APP]No exist: %s", fileName.GetRawString());
-        return InvalidMotionQueueEntryHandleValue;
     }
 
     // MotionSync
@@ -375,6 +379,11 @@ void LAppMotionSyncLinkModel::SetupModel()
         buffer = CreateBuffer(path.GetRawString(), &size);
         LoadPhysics(buffer, size);
         DeleteBuffer(buffer, path.GetRawString());
+
+        if (_physics != nullptr)
+        {
+            _updateScheduler.AddUpdatableList(CSM_NEW CubismPhysicsUpdater(*_physics));
+        }
     }
 
     // Pose
@@ -386,6 +395,11 @@ void LAppMotionSyncLinkModel::SetupModel()
         buffer = CreateBuffer(path.GetRawString(), &size);
         LoadPose(buffer, size);
         DeleteBuffer(buffer, path.GetRawString());
+
+        if (_pose != nullptr)
+        {
+            _updateScheduler.AddUpdatableList(CSM_NEW CubismPoseUpdater(*_pose));
+        }
     }
 
     // Layout
@@ -420,13 +434,15 @@ void LAppMotionSyncLinkModel::SetupModel()
 
         _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec, JniBridgeC::GetJniLibPath() + "/");
 
-        if (!_motionSync)
+        if (_motionSync == nullptr)
         {
             LAppPal::PrintLogLn("Failed to SetupModel().");
             return;
         }
 
         DeleteBuffer(buffer, path.GetRawString());
+
+        _updateScheduler.AddUpdatableList(CSM_NEW CubismMotionSyncUpdater(*_motionSync));
 
         // 音声データ
         // モーション名とそれに紐づくデータを保存
@@ -435,6 +451,8 @@ void LAppMotionSyncLinkModel::SetupModel()
         _motionIndex = -1;
         _isMotionSync = true;
     }
+
+    _updateScheduler.SortUpdatableList();
 
     _updating = false;
     _initialized = true;

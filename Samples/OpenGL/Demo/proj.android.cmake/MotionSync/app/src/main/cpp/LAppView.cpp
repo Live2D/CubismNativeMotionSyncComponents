@@ -17,7 +17,7 @@
 #include "LAppMotionSyncModel.hpp"
 #include "LAppMotionSyncDefine.hpp"
 
-#include <Rendering/OpenGL/CubismOffscreenSurface_OpenGLES2.hpp>
+#include <Rendering/OpenGL/CubismRenderTarget_OpenGLES2.hpp>
 #include <Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp>
 
 #include "JniBridgeC.hpp"
@@ -88,8 +88,9 @@ void LAppView::InitializeSprite()
 
     float x = width * 0.5f;
     float y = height * 0.5f;
-    float fWidth = (backgroundTexture->width * 2.0f);
     float fHeight = (height * 0.95f);
+    float ratio = fHeight / static_cast<float>(backgroundTexture->height);
+    float fWidth = static_cast<float>(backgroundTexture->width) * ratio;
 
     if (_back == NULL)
     {

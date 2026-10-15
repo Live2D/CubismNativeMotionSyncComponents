@@ -3,10 +3,11 @@ set(NATIVE_SRC_PATH ${NATIVE_PATH}/Samples/OpenGL/Demo/proj.ios.cmake/src)
 target_include_directories(${APP_NAME} PUBLIC ${NATIVE_SRC_PATH})
 
 if (CSM_MOTIONSYNC_MOTION_DEMO)
+  target_compile_definitions(${APP_NAME} PRIVATE CSM_MOTIONSYNC_MOTION_DEMO)
   target_sources(${APP_NAME}
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/AppMotionSyncLinkDelegate.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/AppMotionSyncLinkDelegate.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/AppDelegate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/AppDelegate.mm
     ${NATIVE_SRC_PATH}/LAppAllocator.h
     ${NATIVE_SRC_PATH}/LAppAllocator.mm
     ${NATIVE_SRC_PATH}/LAppDefine.h
@@ -28,9 +29,11 @@ if (CSM_MOTIONSYNC_MOTION_DEMO)
     ${NATIVE_SRC_PATH}/LAppTextureManager.mm
     ${NATIVE_SRC_PATH}/LAppWavFileHandler.h
     ${NATIVE_SRC_PATH}/LAppWavFileHandler.mm
-    ${CMAKE_CURRENT_SOURCE_DIR}/mainMotion.m
-    ${CMAKE_CURRENT_SOURCE_DIR}/MotionViewController.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/MotionViewController.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.m
+    ${CMAKE_CURRENT_SOURCE_DIR}/SceneDelegate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/SceneDelegate.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/ViewController.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ViewController.mm
   )
 else()
   target_sources(${APP_NAME}
@@ -58,6 +61,8 @@ else()
     ${NATIVE_SRC_PATH}/LAppWavFileHandler.h
     ${NATIVE_SRC_PATH}/LAppWavFileHandler.mm
     ${CMAKE_CURRENT_SOURCE_DIR}/main.m
+    ${CMAKE_CURRENT_SOURCE_DIR}/SceneDelegate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/SceneDelegate.mm
     ${CMAKE_CURRENT_SOURCE_DIR}/ViewController.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ViewController.mm
   )

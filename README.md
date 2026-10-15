@@ -37,6 +37,13 @@ This library provides the motion-sync function. Live2D Cubism MotionSync Core is
 To download the plugin package that includes Live2D Cubism MotionSync Core, please refer to [this](https://www.live2d.com/en/sdk/download/motionsync/) page.
 
 
+## New Features in Cubism 5 and Compatibility with Previous Versions
+
+This SDK is designed for Cubism 5.3.  
+For information about SDK support for the new features introduced in the Cubism 5.3 Editor, please see [here](https://docs.live2d.com/en/cubism-sdk-manual/cubism-5-3-new-functions/).  
+For compatibility with previous versions of the Cubism SDK, please see [here](https://docs.live2d.com/en/cubism-sdk-manual/compatibility-with-cubism-5-3/).
+
+
 ## Directory structure
 
 ```
@@ -85,18 +92,18 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 | Development Tool | Version |
 | --- | --- |
 | Android Studio | Quail 3 2026.1.3 |
-| CMake | 3.31.8 |
+| CMake | 3.31.12 |
 | Visual Studio 2015 | Update 3 |
 | Visual Studio 2017 | 15.9.82 |
-| Visual Studio 2019 | 16.11.59 |
+| Visual Studio 2019 | 16.11.60 |
 | Visual Studio 2022 | 17.14.38 |
-| Xcode | 26.6 |
+| Xcode | 27.0 |
 
 ### Android
 
 | Android SDK tools | Version |
 | --- | --- |
-| Android NDK | 29.0.14206865 |
+| Android NDK | 30.0.16248370 |
 | Android SDK | 36.1.0 |
 | CMake | 4.1.2 |
 
@@ -105,8 +112,8 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 | Platform | Version |
 | --- | --- |
-| iOS / iPadOS | 26.6 |
-| macOS | 26.6 |
+| iOS / iPadOS | 27.1 |
+| macOS | 27.0 |
 | Windows 11 | 25H2 |
 
 ### Android
@@ -119,7 +126,7 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 ### Cubism SDK for Native
 
-[Cubism 5 SDK for Native R4_1](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.4.1)
+[Cubism 5 SDK for Native R5](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.5)
 
 
 ## Sound device

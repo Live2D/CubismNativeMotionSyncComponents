@@ -8,10 +8,12 @@
 #import "LAppMotionSyncModel.h"
 #import "CubismModelMotionSyncSettingJson.hpp"
 #import "LAppDefine.h"
-#import "AppDelegate.h"
+#import "SceneDelegate.h"
 #import "LAppMotionSyncDefine.h"
 #import "LAppPal.h"
 #import "LAppTextureManager.h"
+#import "ViewController.h"
+#import "CubismMotionSyncUpdater.hpp"
 #import "Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp"
 
 using namespace Csm;
@@ -64,7 +66,7 @@ LAppMotionSyncModel::~LAppMotionSyncModel()
 void LAppMotionSyncModel::LoadAssets(const csmString fileName)
 {
     _modelHomeDir = csmString(ResourcesPath) + fileName + "/";
-    
+
     if (_debugMode)
     {
         LAppPal::PrintLogLn("[APP]load model setting: %s", fileName.GetRawString());
@@ -85,7 +87,12 @@ void LAppMotionSyncModel::LoadAssets(const csmString fileName)
         return;
     }
 
-    CreateRenderer();
+    SceneDelegate *sceneDelegate = [SceneDelegate sharedSceneDelegate];
+    ViewController *view = sceneDelegate.viewController;
+
+    int width = [view GetWindowWidth];
+    int height = [view GetWindowHeight];
+    CreateRenderer(width, height);
 
     // テクスチャのセットアップ
     SetupTextures();
@@ -93,24 +100,36 @@ void LAppMotionSyncModel::LoadAssets(const csmString fileName)
 
 void LAppMotionSyncModel::Update()
 {
-    // ウィンドウサイズを取得
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    int width = screenRect.size.width;
-    int height = screenRect.size.height;
+    SceneDelegate *sceneDelegate = [SceneDelegate sharedSceneDelegate];
+    ViewController *view = sceneDelegate.viewController;
+
+    int width = [view GetWindowWidth];
+    int height = [view GetWindowHeight];
+
+    if (width == 0 || height == 0)
+    {
+        return;
+    }
+
+    float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    float displayRatio = static_cast<float>(height) / static_cast<float>(width);
+    float canvasRatio = _model->GetCanvasHeight() / _model->GetCanvasWidth();
 
     Csm::CubismMatrix44 projection;
     // 念のため単位行列に初期化
     projection.LoadIdentity();
 
-    if (_model->GetCanvasWidth() > 1.0f && width < height)
+    if (canvasRatio < displayRatio)
     {
         // 横に長いモデルを縦長ウィンドウに表示する際モデルの横サイズでscaleを算出する
         GetModelMatrix()->SetWidth(2.0f);
-        projection.Scale(1.0f, static_cast<float>(width) / static_cast<float>(height));
+        projection.Scale(1.0f, aspectRatio);
     }
     else
     {
-        projection.Scale(static_cast<float>(height) / static_cast<float>(width), 1.0f);
+        // 縦長モデルを高さに合わせて横方向のスケールを調整
+        GetModelMatrix()->SetHeight(2.0f);
+        projection.Scale(1.0f / aspectRatio, 1.0f);
     }
 
     // 再生が終了していたらマイク入力に切り替える
@@ -191,13 +210,17 @@ void LAppMotionSyncModel::SetupModel()
 
         _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec);
 
-        if (!_motionSync)
+        if (_motionSync == nullptr)
         {
             LAppPal::PrintLogLn("Failed to SetupModel().");
             return;
         }
 
         DeleteBuffer(buffer, path.GetRawString());
+
+        // モーションシンクを更新リストへ登録
+        _updateScheduler.AddUpdatableList(CSM_NEW CubismMotionSyncUpdater(*_motionSync));
+        _updateScheduler.SortUpdatableList();
 
         // 音声データ
         _soundFileList = _modelSetting->GetMotionSyncSoundFileList();
@@ -222,7 +245,7 @@ void LAppMotionSyncModel::SetupTextures()
         csmString texturePath = _modelSetting->GetTextureFileName(modelTextureNumber);
         texturePath = _modelHomeDir + texturePath;
 
-        AppDelegate *delegate = (AppDelegate *) [[UIApplication sharedApplication] delegate];
+        SceneDelegate *delegate = [SceneDelegate sharedSceneDelegate];
         TextureInfo* texture = [[delegate getTextureManager] createTextureFromPngFile:texturePath.GetRawString()];
         csmInt32 glTextueNumber = texture->id;
 
@@ -236,19 +259,15 @@ void LAppMotionSyncModel::SetupTextures()
 
 void LAppMotionSyncModel::UpdateModelParam()
 {
-        const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
-        _userTimeSeconds += deltaTimeSeconds;
-    
-        // 不透明度
-        _opacity = _model->GetModelOpacity();
-    
-        // モーションシンクプラグイン
-        if (_motionSync != NULL)
-        {
-            _motionSync->UpdateParameters(_model, deltaTimeSeconds);
-        }
-    
-        _model->Update();
+    const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
+    _userTimeSeconds += deltaTimeSeconds;
+
+    // 不透明度
+    _opacity = _model->GetModelOpacity();
+
+    _updateScheduler.OnLateUpdate(_model, deltaTimeSeconds);
+
+    _model->Update();
 }
 
 void LAppMotionSyncModel::PlayIndexSound()

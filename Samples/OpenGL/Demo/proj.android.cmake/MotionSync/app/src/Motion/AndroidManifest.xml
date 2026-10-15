@@ -18,8 +18,8 @@
                 tools:node="remove" />
         <activity
                 android:name=".motion.MainActivity"
-                android:configChanges="orientation"
-                android:screenOrientation="sensorLandscape"
+                android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+                android:screenOrientation="fullUser"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

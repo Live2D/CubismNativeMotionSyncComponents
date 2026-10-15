@@ -39,9 +39,9 @@ Live2D Cubism MotionSync Coreを同梱したプラグインパッケージをダ
 
 ## Cubism 5新機能や過去バージョンとの互換性について
 
-本 SDK はCubism 5に対応した製品です。  
-Cubism 5 Editorに搭載された新機能のSDK対応については [こちら](https://docs.live2d.com/cubism-sdk-manual/cubism-5-new-functions/)をご確認ください。  
-過去バージョンのCubism SDKとの互換性については [こちら](https://docs.live2d.com/cubism-sdk-manual/compatibility-with-cubism-5/)をご確認ください。
+本 SDK はCubism 5.3に対応した製品です。  
+Cubism 5.3 Editorに搭載された新機能のSDK対応については [こちら](https://docs.live2d.com/cubism-sdk-manual/cubism-5-3-new-functions/)をご確認ください。  
+過去バージョンのCubism SDKとの互換性については [こちら](https://docs.live2d.com/cubism-sdk-manual/compatibility-with-cubism-5-3/)をご確認ください。
 
 
 ## ディレクトリ構成
@@ -93,18 +93,18 @@ Demo
 | 開発ツール | バージョン |
 | --- | --- |
 | Android Studio | Quail 3 2026.1.3 |
-| CMake | 3.31.8 |
+| CMake | 3.31.12 |
 | Visual Studio 2015 | Update 3 |
 | Visual Studio 2017 | 15.9.82 |
-| Visual Studio 2019 | 16.11.59 |
+| Visual Studio 2019 | 16.11.60 |
 | Visual Studio 2022 | 17.14.38 |
-| Xcode | 26.6 |
+| Xcode | 27.0 |
 
 ### Android
 
 | Android SDK tools | バージョン |
 | --- | --- |
-| Android NDK | 29.0.14206865 |
+| Android NDK | 30.0.16248370 |
 | Android SDK | 36.1.0 |
 | CMake | 4.1.2 |
 
@@ -113,8 +113,8 @@ Demo
 
 | プラットフォーム | バージョン |
 | --- | --- |
-| iOS / iPadOS | 26.6 |
-| macOS | 26.6 |
+| iOS / iPadOS | 27.1 |
+| macOS | 27.0 |
 | Windows 11 | 25H2 |
 
 ### Android
@@ -127,7 +127,7 @@ Demo
 
 ### Cubism SDK for Native
 
-[Cubism 5 SDK for Native R4_1](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.4.1)
+[Cubism 5 SDK for Native R5](https://github.com/Live2D/CubismNativeSamples/releases/tag/5-r.5)
 
 
 ## サウンドデバイス

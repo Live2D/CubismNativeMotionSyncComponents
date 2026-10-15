@@ -25,24 +25,6 @@ import com.live2d.demo.JniBridgeJava;
 
 public class MainActivity extends Activity {
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        float pointX = event.getX();
-        float pointY = event.getY();
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                JniBridgeJava.nativeOnTouchesBegan(pointX, pointY);
-                break;
-            case MotionEvent.ACTION_UP:
-                JniBridgeJava.nativeOnTouchesEnded(pointX, pointY);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                JniBridgeJava.nativeOnTouchesMoved(pointX, pointY);
-                break;
-        }
-        return super.onTouchEvent(event);
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         JniBridgeJava.setActivityInstance(this);
@@ -54,6 +36,37 @@ public class MainActivity extends Activity {
         glSurfaceView.setRenderer(glRenderer);
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         setContentView(glSurfaceView);
+
+        //noinspection ClickableViewAccessibility
+        glSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, final MotionEvent event) {
+                final float pointX = event.getX();
+                final float pointY = event.getY();
+                final int action = event.getAction();
+
+                glSurfaceView.queueEvent(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (action) {
+                                case MotionEvent.ACTION_DOWN:
+                                    JniBridgeJava.nativeOnTouchesBegan(pointX, pointY);
+                                    break;
+                                case MotionEvent.ACTION_UP:
+                                    JniBridgeJava.nativeOnTouchesEnded(pointX, pointY);
+                                    break;
+                                case MotionEvent.ACTION_MOVE:
+                                    JniBridgeJava.nativeOnTouchesMoved(pointX, pointY);
+                                    break;
+                            }
+                        }
+                    }
+                );
+                return true;
+            }
+        });
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             getWindow().getDecorView().setSystemUiVisibility(

@@ -32,4 +32,14 @@ namespace LAppMotionSyncDefine {
     const csmInt32 SamplesPerSec = 48000;
     // ビット深度
     const csmInt32 BitDepth = 16;
+
+    // マイク入力の読み出し前に許容するブロック数
+    const csmUint32 MicrophoneBacklogLimitBlocks = 2;
+    // 上限超過時に残すブロック数
+    const csmUint32 MicrophoneBacklogTargetBlocks = 1;
+
+    static_assert(1 <= MicrophoneBacklogTargetBlocks &&
+        MicrophoneBacklogTargetBlocks <= MicrophoneBacklogLimitBlocks &&
+        MicrophoneBacklogLimitBlocks < CsmInputBufferSize,
+        "Invalid Microphone backlog limits.");
 }

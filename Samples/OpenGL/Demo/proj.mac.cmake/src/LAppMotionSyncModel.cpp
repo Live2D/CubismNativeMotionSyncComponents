@@ -12,6 +12,7 @@
 #include "LAppMotionSyncDefine.hpp"
 #include "LAppPal.hpp"
 #include "LAppTextureManager.hpp"
+#include "CubismMotionSyncUpdater.hpp"
 #include "Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp"
 
 using namespace Csm;
@@ -66,7 +67,7 @@ void LAppMotionSyncModel::LoadAssets(const csmString fileName)
         return;
     }
 
-    CreateRenderer();
+    CreateRenderer(LAppDelegate::GetInstance()->GetWindowWidth(), LAppDelegate::GetInstance()->GetWindowHeight());
 
     // テクスチャのセットアップ
     SetupTextures();
@@ -171,13 +172,17 @@ void LAppMotionSyncModel::SetupModel()
 
         _motionSync = CubismMotionSync::Create(_model, buffer, size, SamplesPerSec, _executeAbsolutePath);
 
-        if (!_motionSync)
+        if (_motionSync == nullptr)
         {
             LAppPal::PrintLogLn("Failed to SetupModel().");
             return;
         }
 
         DeleteBuffer(buffer, path.GetRawString());
+
+        // モーションシンクを更新リストへ登録
+        _updateScheduler.AddUpdatableList(CSM_NEW CubismMotionSyncUpdater(*_motionSync));
+        _updateScheduler.SortUpdatableList();
 
         // 音声データ
         _soundFileList = _modelSetting->GetMotionSyncSoundFileList();
@@ -215,19 +220,15 @@ void LAppMotionSyncModel::SetupTextures()
 
 void LAppMotionSyncModel::UpdateModelParam()
 {
-        const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
-        _userTimeSeconds += deltaTimeSeconds;
-    
-        // 不透明度
-        _opacity = _model->GetModelOpacity();
-    
-        // モーションシンクプラグイン
-        if (_motionSync != NULL)
-        {
-            _motionSync->UpdateParameters(_model, deltaTimeSeconds);
-        }
-    
-        _model->Update();
+    const csmFloat32 deltaTimeSeconds = LAppPal::GetDeltaTime();
+    _userTimeSeconds += deltaTimeSeconds;
+
+    // 不透明度
+    _opacity = _model->GetModelOpacity();
+
+    _updateScheduler.OnLateUpdate(_model, deltaTimeSeconds);
+
+    _model->Update();
 }
 
 void LAppMotionSyncModel::PlayIndexSound()

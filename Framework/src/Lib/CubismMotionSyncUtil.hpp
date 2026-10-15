@@ -55,7 +55,7 @@ private:
     void ConvertObjectToNative(csmVector<CubismMotionSyncEngineMappingInfo> mapInfoList)
     {
         const csmInt32 infoListCount = mapInfoList.GetSize();
-
+        size_t bufferSize = 0;
 
         for (csmInt32 infoIdx = 0; infoIdx < infoListCount; infoIdx++)
         {
@@ -66,8 +66,9 @@ private:
             // Scale
             info.Scale = mapInfo.GetScale();
             // AudioParameterId
-            csmChar* buff = static_cast<csmChar*>(CSM_MALLOC(sizeof(csmChar) * (mapInfo.GetAudioParameterId().GetLength() + 1)));
-            strcpy(buff, mapInfo.GetAudioParameterId().GetRawString());
+            bufferSize = sizeof(csmChar) * (mapInfo.GetAudioParameterId().GetLength() + 1);
+            csmChar* buff = static_cast<csmChar*>(CSM_MALLOC(bufferSize));
+            memcpy(buff, mapInfo.GetAudioParameterId().GetRawString(), bufferSize);
             info.AudioParameterId = buff;
             // ModelParameterValues
             info.ModelParameterValues = static_cast<csmFloat32*>(CSM_MALLOC(sizeof(csmFloat32) * mapInfo.GetModelParameterValues().GetSize()));
@@ -80,8 +81,9 @@ private:
             csmChar** buffs = static_cast<csmChar**>(CSM_MALLOC(sizeof(csmChar*) * mapInfo.GetModelParameterIds().GetSize()));
             for (csmUint32 i = 0; i < mapInfo.GetModelParameterIds().GetSize(); i++)
             {
-                buffs[i] = static_cast<csmChar*>(CSM_MALLOC(sizeof(csmChar) * (mapInfo.GetModelParameterIds()[i].GetLength() + 1)));
-                strcpy(buffs[i], mapInfo.GetModelParameterIds()[i].GetRawString());
+                bufferSize = sizeof(csmChar) * (mapInfo.GetModelParameterIds()[i].GetLength() + 1);
+                buffs[i] = static_cast<csmChar*>(CSM_MALLOC(bufferSize));
+                memcpy(buffs[i], mapInfo.GetModelParameterIds()[i].GetRawString(), bufferSize);
             }
             info.ModelParameterIds = const_cast<const csmChar**>(buffs);
 

@@ -13,7 +13,7 @@
 #include <Math/CubismViewMatrix.hpp>
 #include "CubismFramework.hpp"
 #include "LAppMotionSyncLinkModel.hpp"
-#include <Rendering/OpenGL/CubismOffscreenSurface_OpenGLES2.hpp>
+#include <Rendering/OpenGL/CubismRenderTarget_OpenGLES2.hpp>
 #include "LAppSpriteShader.hpp"
 
 class LAppSprite;

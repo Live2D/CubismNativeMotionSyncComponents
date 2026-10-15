@@ -314,6 +314,14 @@ void LAppAudioManager::WriteInputBuffer(Csm::csmFloat32* samples)
 void LAppAudioManager::ReadInputBuffer(Csm::csmFloat32* samples)
 {
     _mutex.Lock();
+
+    const csmUint32 queued = _inputDataList.GetSize();
+
+    if (queued > LAppMotionSyncDefine::MicrophoneBacklogLimitBlocks)
+    {
+        // 古い録音データを捨てる
+        _inputDataList.Remove(queued - LAppMotionSyncDefine::MicrophoneBacklogTargetBlocks);
+    }
     
     if (0 < _inputDataList.GetSize())
     {

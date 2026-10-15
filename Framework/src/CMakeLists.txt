@@ -4,6 +4,7 @@ target_sources(${LIB_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismModelMotionSyncSettingJson.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSync.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSync.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncAudioBuffer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncData.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncData.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncDataJson.cpp
@@ -21,7 +22,8 @@ target_sources(${LIB_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncEngineVersion.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncProcessorCri.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncProcessorCri.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncAudioBuffer.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncUpdater.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubismMotionSyncUpdater.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncEngine.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ICubismMotionSyncProcessor.cpp

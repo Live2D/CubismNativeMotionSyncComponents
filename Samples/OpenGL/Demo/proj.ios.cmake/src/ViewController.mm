@@ -16,13 +16,17 @@
 #import <GLKit/GLKit.h>
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
-#import "AppDelegate.h"
+#import "SceneDelegate.h"
 #import "LAppSprite.h"
 #import "LAppDefine.h"
 #import "LAppMotionSyncDefine.h"
 #import "LAppTextureManager.h"
 #import "LAppPal.h"
+#ifdef CSM_MOTIONSYNC_MOTION_DEMO
+#import "LAppMotionSyncLinkModel.h"
+#else
 #import "LAppMotionSyncModel.h"
+#endif
 
 #define BUFFER_OFFSET(bytes) ((GLubyte *)NULL + (bytes))
 
@@ -31,12 +35,20 @@ using namespace LAppDefine;
 using namespace LAppMotionSyncDefine;
 
 @interface ViewController ()
+{
+    int _windowWidth;  ///< ウィンドウサイズ幅の保存
+    int _windowHeight; ///< ウィンドウサイズ高さの保存
+}
 @property (nonatomic) LAppSprite *back; //背景画像
 @property (nonatomic) LAppSprite *fastForward; //早送り画像
 @property (nonatomic) LAppSprite *gear; //歯車画像
 @property (nonatomic) LAppSprite *power; //電源画像
-                                       
+
+#ifdef CSM_MOTIONSYNC_MOTION_DEMO
+@property (nonatomic) LAppMotionSyncLinkModel *userModel; ///< ユーザーが実際に使用するモデル
+#else
 @property (nonatomic) LAppMotionSyncModel *userModel; ///< ユーザーが実際に使用するモデル
+#endif
 @property (nonatomic) Csm::csmVector<Csm::csmString> modelNameList; ///< モデルディレクトリ名のリスト
 @property (nonatomic) Csm::csmInt32 modelIndex; ///< 表示するシーンモデル名のインデックス値
 @end
@@ -57,10 +69,13 @@ int CompareCsmString(const void* a, const void* b)
     _gear = nil;
     _power = nil;
 
-    _userModel->DeleteRenderer();
-    delete(_userModel);
-    _userModel = nil;
-    
+    if (_userModel)
+    {
+        _userModel->DeleteRenderer();
+        delete(_userModel);
+        _userModel = nil;
+    }
+
     GLKView *view = (GLKView*)self.view;
 
     view = nil;
@@ -71,7 +86,8 @@ int CompareCsmString(const void* a, const void* b)
     [super viewDidLoad];
     mOpenGLRun = true;
 
-    [super viewDidLoad];
+    [self initializeScreen];
+
     GLKView *view = (GLKView*)self.view;
 
     // GL描画周期を60FPSに設定
@@ -99,6 +115,12 @@ int CompareCsmString(const void* a, const void* b)
     glBindBuffer(GL_ARRAY_BUFFER,  _fragmentBufferId);
 }
 
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    [self resizeScreen];
+}
+
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
 {
     //時間更新
@@ -109,28 +131,42 @@ int CompareCsmString(const void* a, const void* b)
         // 画面クリア
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // セーフエリアのみ
+        UIEdgeInsets insets = self.view.safeAreaInsets;
+        CGFloat scale = self.traitCollection.displayScale;
+        GLint vpX = (GLint)(insets.left * scale);
+        GLint vpY = (GLint)(insets.bottom * scale);
+        GLsizei vpW = (GLsizei)((self.view.frame.size.width - insets.left - insets.right) * scale);
+        GLsizei vpH = (GLsizei)((self.view.frame.size.height - insets.top - insets.bottom) * scale);
+        glViewport(vpX, vpY, vpW, vpH);
+
         [_back render:_vertexBufferId fragmentBufferID:_fragmentBufferId];
 
         [_fastForward render:_vertexBufferId fragmentBufferID:_fragmentBufferId];
-        
+
         [_gear render:_vertexBufferId fragmentBufferID:_fragmentBufferId];
 
         [_power render:_vertexBufferId fragmentBufferID:_fragmentBufferId];
 
         // モデルの描画
         _userModel->Update();
-        
+
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     }
 }
 
 - (void)initializeSprite
 {
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    int width = screenRect.size.width;
-    int height = screenRect.size.height;
+    UIWindowScene *windowScene = (UIWindowScene *)[UIApplication sharedApplication].connectedScenes.anyObject;
+    if (!windowScene)
+    {
+        return;
+    }
+    UIEdgeInsets insets = windowScene.windows.firstObject.safeAreaInsets;
+    int width = windowScene.screen.bounds.size.width - insets.left - insets.right;
+    int height = windowScene.screen.bounds.size.height - insets.top - insets.bottom;
 
-    AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    SceneDelegate *delegate = [SceneDelegate sharedSceneDelegate];
     LAppTextureManager* textureManager = [delegate getTextureManager];
     const string resourcesPath = ResourcesPath;
 
@@ -138,27 +174,27 @@ int CompareCsmString(const void* a, const void* b)
     TextureInfo* backgroundTexture = [textureManager createTextureFromPngFile:resourcesPath+imageName];
     float x = width * 0.5f;
     float y = height * 0.5f;
-    float fWidth = 300.0f;
-    float fHeight = 300.0f;
-    fWidth = static_cast<float>(width * 0.75f);
-    fHeight = static_cast<float>(height * 0.95f);
-    _back = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight TextureId:backgroundTexture->id];
+    float fHeight = static_cast<float>(height * 0.95f);
+    float ratio = fHeight / static_cast<float>(backgroundTexture->height);
+    float fWidth = backgroundTexture->width * ratio;
+
+    _back = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight MaxWidth:width MaxHeight:height TextureId:backgroundTexture->id];
 
     imageName = FastForwardImageName;
     TextureInfo* fastForwardTexture = [textureManager createTextureFromPngFile:resourcesPath+imageName];
     x = static_cast<float>(fastForwardTexture->width * 0.5f);
-    y = static_cast<float>(height - fastForwardTexture->height * 0.5f);
+    y = static_cast<float>(height - fastForwardTexture->height);
     fWidth = static_cast<float>(fastForwardTexture->width);
     fHeight = static_cast<float>(fastForwardTexture->height);
-    _fastForward = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight TextureId:fastForwardTexture->id];
-    
+    _fastForward = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight MaxWidth:width MaxHeight:height TextureId:fastForwardTexture->id];
+
     imageName = GearImageName;
     TextureInfo* gearTexture = [textureManager createTextureFromPngFile:resourcesPath+imageName];
     x = static_cast<float>(width - gearTexture->width * 0.5f);
-    y = static_cast<float>(height - gearTexture->height * 0.5f);
+    y = static_cast<float>(height - gearTexture->height);
     fWidth = static_cast<float>(gearTexture->width);
     fHeight = static_cast<float>(gearTexture->height);
-    _gear = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight TextureId:gearTexture->id];
+    _gear = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight MaxWidth:width MaxHeight:height TextureId:gearTexture->id];
 
     imageName = PowerImageName;
     TextureInfo* powerTexture = [textureManager createTextureFromPngFile:resourcesPath+imageName];
@@ -166,7 +202,7 @@ int CompareCsmString(const void* a, const void* b)
     y = static_cast<float>(powerTexture->height * 0.5f);
     fWidth = static_cast<float>(powerTexture->width);
     fHeight = static_cast<float>(powerTexture->height);
-    _power = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight TextureId:powerTexture->id];
+    _power = [[LAppSprite alloc] initWithMyVar:x Y:y Width:fWidth Height:fHeight MaxWidth:width MaxHeight:height TextureId:powerTexture->id];
 }
 
 - (void)initializeModel
@@ -191,14 +227,21 @@ int CompareCsmString(const void* a, const void* b)
     NSLog(@"%@", touch.view);
 
     CGPoint point = [touch locationInView:self.view];
+    UIEdgeInsets insets = self.view.safeAreaInsets;
+    point.x -= insets.left;
+    point.y -= insets.top;
     float pointY = [self transformTapY:point.y];
 
     // 音声の切り替え
     if ([_fastForward isHit:point.x PointY:pointY])
     {
+#ifdef CSM_MOTIONSYNC_MOTION_DEMO
+        _userModel->ChangeNextMotion();
+#else
         _userModel->ChangeNextIndexSound();
+#endif
     }
-        
+
     // 歯車にタップしたか
     if ([_gear isHit:point.x PointY:pointY])
     {
@@ -208,15 +251,15 @@ int CompareCsmString(const void* a, const void* b)
     // 電源ボタンにタップしたか
     if ([_power isHit:point.x PointY:pointY])
     {
-        AppDelegate *delegate = (AppDelegate *) [[UIApplication sharedApplication] delegate];
+        SceneDelegate *delegate = [SceneDelegate sharedSceneDelegate];
         [delegate finishApplication];
     }
 }
 
 - (float)transformTapY:(float)deviceY
 {
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    int height = screenRect.size.height;
+    UIEdgeInsets insets = self.view.safeAreaInsets;
+    float height = self.view.frame.size.height - insets.top - insets.bottom;
     return deviceY * -1 + height;
 }
 
@@ -255,7 +298,11 @@ int CompareCsmString(const void* a, const void* b)
     }
 
     // モデルデータの新規生成
+#ifdef CSM_MOTIONSYNC_MOTION_DEMO
+    _userModel = new LAppMotionSyncLinkModel();
+#else
     _userModel = new LAppMotionSyncModel();
+#endif
 
     if (_modelIndex < _modelNameList.GetSize())
     {
@@ -272,5 +319,140 @@ int CompareCsmString(const void* a, const void* b)
         [self LoadModel];
     }
 }
+
+- (int)GetWindowWidth
+{
+    return _windowWidth;
+}
+
+- (int)GetWindowHeight
+{
+    return _windowHeight;
+}
+
+- (void)initializeScreen
+{
+    // viewDidLoad 時点では self.view.safeAreaInsets が常にゼロを返すため、
+    // UIWindowScene 経由でセーフエリアを取得し、初回サイズを算出する。
+    UIWindowScene *windowScene =
+        (UIWindowScene *)[UIApplication sharedApplication].connectedScenes.anyObject;
+    if (!windowScene)
+    {
+        return;
+    }
+
+    UIEdgeInsets insets = windowScene.windows.firstObject.safeAreaInsets;
+    CGSize size = windowScene.screen.bounds.size;
+    if (size.width <= 0 || size.height <= 0)
+    {
+        return;
+    }
+
+    int width = size.width - insets.left - insets.right;
+    int height = size.height - insets.top - insets.bottom;
+
+    const CGFloat retinaScale = self.traitCollection.displayScale;
+    _windowWidth = width * retinaScale;
+    _windowHeight = height * retinaScale;
+}
+
+- (void)resizeScreen
+{
+    UIEdgeInsets insets = self.view.safeAreaInsets;
+    int width = self.view.frame.size.width - insets.left - insets.right;
+    int height = self.view.frame.size.height - insets.top - insets.bottom;
+
+    if (width == 0 || height == 0)
+    {
+        return;
+    }
+
+    const CGFloat retinaScale = self.traitCollection.displayScale;
+    int newWindowWidth = width * retinaScale;
+    int newWindowHeight = height * retinaScale;
+    if (newWindowWidth == _windowWidth && newWindowHeight == _windowHeight)
+    {
+        return;
+    }
+    _windowWidth = newWindowWidth;
+    _windowHeight = newWindowHeight;
+
+    if (_userModel)
+    {
+        _userModel->SetRenderTargetSize(newWindowWidth, newWindowHeight);
+    }
+
+    [self resizeSprite:width height:height];
+}
+
+- (void)resizeSprite:(float)width height:(float)height
+{
+    UIEdgeInsets insets = self.view.safeAreaInsets;
+    float maxWidth = self.view.frame.size.width - insets.left - insets.right;
+    float maxHeight = self.view.frame.size.height - insets.top - insets.bottom;
+
+    SceneDelegate *delegate = [SceneDelegate sharedSceneDelegate];
+    LAppTextureManager* textureManager = [delegate getTextureManager];
+
+    const string resourcesPath = ResourcesPath;
+
+    float x;
+    float y;
+    float fHeight;
+    float ratio;
+    float fWidth;
+
+    if (_back)
+    {
+        TextureInfo* backgroundTexture = [textureManager createTextureFromPngFile:resourcesPath+BackImageName];
+        x = width * 0.5f;
+        y = height * 0.5f;
+        fHeight = static_cast<float>(height * 0.95f);
+        ratio = fHeight / static_cast<float>(backgroundTexture->height);
+        fWidth = static_cast<float>(backgroundTexture->width * ratio);
+        [_back resizeImmidiate:x Y:y Width:fWidth Height:fHeight MaxWidth:maxWidth MaxHeight:maxHeight];
+    }
+
+    if (_fastForward)
+    {
+        TextureInfo* fastForwardTexture = [textureManager createTextureFromPngFile:resourcesPath+FastForwardImageName];
+        fWidth = static_cast<float>(fastForwardTexture->width);
+        fHeight = static_cast<float>(fastForwardTexture->height);
+        x = static_cast<float>(fWidth * 0.5f);
+        y = static_cast<float>(height - fHeight);
+        [_fastForward resizeImmidiate:x Y:y Width:fWidth Height:fHeight MaxWidth:maxWidth MaxHeight:maxHeight];
+    }
+
+    if (_gear)
+    {
+        TextureInfo* gearTexture = [textureManager createTextureFromPngFile:resourcesPath+GearImageName];
+        int gearWidth = gearTexture->width;
+        int gearHeight = gearTexture->height;
+        x = static_cast<float>(width - gearWidth * 0.5f);
+        y = static_cast<float>(height - gearHeight);
+        fHeight = static_cast<float>(gearHeight);
+        fWidth = static_cast<float>(gearWidth);
+        [_gear resizeImmidiate:x Y:y Width:fWidth Height:fHeight MaxWidth:maxWidth MaxHeight:maxHeight];
+    }
+
+    if (_power)
+    {
+        TextureInfo* powerTexture = [textureManager createTextureFromPngFile:resourcesPath+PowerImageName];
+        int powerWidth = powerTexture->width;
+        int powerHeight = powerTexture->height;
+        x = static_cast<float>(width - powerWidth * 0.5f);
+        y = static_cast<float>(powerHeight * 0.5f);
+        fWidth = static_cast<float>(powerWidth);
+        fHeight = static_cast<float>(powerHeight);
+        [_power resizeImmidiate:x Y:y Width:fWidth Height:fHeight MaxWidth:maxWidth MaxHeight:maxHeight];
+    }
+}
+
+#ifdef CSM_MOTIONSYNC_MOTION_DEMO
+- (LAppMotionSyncLinkModel*)getCurrentModel
+{
+    return _userModel;
+}
+#endif
 
 @end

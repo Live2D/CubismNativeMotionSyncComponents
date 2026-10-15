@@ -6,6 +6,7 @@
  */
 
 #import "AppDelegate.h"
+#import "SceneDelegate.h"
 #import "ViewController.h"
 #import "LAppAllocator.h"
 #import <iostream>
@@ -13,18 +14,13 @@
 #import <OpenGLES/ES2/glext.h>
 #import "LAppPal.h"
 #import "LAppDefine.h"
-#import "LAppTextureManager.h"
 
 
 @interface AppDelegate ()
 
 @property (nonatomic) LAppAllocator cubismAllocator; // Cubism SDK Allocator
 @property (nonatomic) Csm::CubismFramework::Option cubismOption; // Cubism SDK Option
-@property (nonatomic) bool captured; // クリックしているか
-@property (nonatomic) float mouseX; // マウスX座標
-@property (nonatomic) float mouseY; // マウスY座標
 @property (nonatomic) bool isEnd; // APPを終了しているか
-@property (nonatomic, readwrite) LAppTextureManager *textureManager; // テクスチャマネージャー
 
 @end
 
@@ -32,51 +28,38 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    _textureManager = [[LAppTextureManager alloc]init];
-
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.viewController = [[ViewController alloc] initWithNibName:nil bundle:nil];
-    self.window.rootViewController = self.viewController;
-    [self.window makeKeyAndVisible];
-
-    [self initializeCubism];
-
-    [self.viewController initializeSprite];
-
-
     return YES;
 }
 
+- (UISceneConfiguration *)application:(UIApplication *)application
+    configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
+    options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0))
+{
+    UISceneConfiguration *configuration = [[UISceneConfiguration alloc] initWithName:@"Default Configuration"
+                                                                        sessionRole:connectingSceneSession.role];
+    configuration.delegateClass = NSClassFromString(@"SceneDelegate");
+    return configuration;
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
 }
 
-
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
-    self.viewController.mOpenGLRun = false;
-
-    _textureManager = nil;
 }
-
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
-    self.viewController.mOpenGLRun = true;
-
-    _textureManager = [[LAppTextureManager alloc]init];
 }
-
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
 
 }
 
-
 - (void)applicationWillTerminate:(UIApplication *)application {
-    self.viewController = nil;
+    [self releaseApplicationResources];
 }
 
 - (void)initializeCubism
@@ -90,10 +73,7 @@
 
     Csm::CubismFramework::Initialize();
 
-    [self.viewController initializeModel];
-    
     LAppPal::UpdateTime();
-
 }
 
 - (bool)getIsEnd
@@ -103,19 +83,33 @@
 
 - (void)finishApplication
 {
-    [self.viewController releaseView];
+    [self releaseApplicationResources];
 
-    _textureManager = nil;
+    exit(0);
+}
 
-    Csm::CubismFramework::Dispose();
-
-    self.window = nil;
-
-    self.viewController = nil;
+- (void)releaseApplicationResources
+{
+    if (_isEnd)
+    {
+        return;
+    }
 
     _isEnd = true;
 
-    exit(0);
+    for (UIScene *scene in [UIApplication sharedApplication].connectedScenes)
+    {
+        if ([scene.delegate isKindOfClass:[SceneDelegate class]])
+        {
+            SceneDelegate *sceneDelegate = (SceneDelegate *)scene.delegate;
+            [sceneDelegate releaseSceneResources];
+        }
+    }
+
+    if (Csm::CubismFramework::IsInitialized())
+    {
+        Csm::CubismFramework::Dispose();
+    }
 }
 
 @end

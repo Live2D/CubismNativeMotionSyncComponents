@@ -77,6 +77,16 @@ public:
     GLFWwindow* GetWindow() { return _window; }
 
     /**
+    * @brief   ウインドウの幅を取得する。
+    */
+    int GetWindowWidth() { return _windowWidth; }
+
+    /**
+    * @brief   ウインドウの高さを取得する。
+    */
+    int GetWindowHeight() { return _windowHeight; }
+
+    /**
     * @brief   アプリケーションを終了するかどうか。
     */
     bool GetIsEnd() { return _isEnd; }
